@@ -27,3 +27,21 @@
 1. 
 1. 
 1. 
+
+
+---
+
+Fatte da Aurora (io)
+
+As the Administrator i want to see current rules
+As the Administrator i want to add a rule
+As the Administrator i want to remove a rule
+As the Administrator i want to modify a rule
+As the Administrator i want to be able to temporarly enable or disable a rule
+As the Administrator i want my changes to be persistent
+As the Administrator i want to be notified of the warning status of a sensor
+As the Administrator i want to monitor in real-time the status of the habitat
+As the Administrator i want to customize the interface
+As the Administrator i want to be able to switch on or off an actuator
+As the administrator i want to be able to see the latest states of each sensor
+As the administrator
