@@ -8,5 +8,4 @@ RUN uv sync
 
 COPY . .
 
-CMD ["uv", "run", "python", "src/create_database.py"]
 CMD ["uv", "run", "python", "src/main.py"]
