@@ -209,3 +209,5 @@ __marimo__/
 
 *.tar
 drive
+*.db
+source/data

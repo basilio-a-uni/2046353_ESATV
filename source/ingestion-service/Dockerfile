@@ -8,4 +8,4 @@ RUN uv sync
 
 COPY . .
 
-CMD ["uv", "run", "python", "src/messaging.py"]
+CMD ["uv", "run", "python", "src/main.py"]

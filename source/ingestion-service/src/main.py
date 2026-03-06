@@ -1,13 +1,11 @@
-from textblob import TextBlob
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
+import messaging
 
 
-@app.route("", methods=['POST'])
-def rest_sensors():
-    
+if __name__ == "__main__":
+    data_example = {
+        "timestamp": "2026-03-06T11:45:00",
+        "rest_sensors": {"greenhouse_temp": 22.5, "co2_hall": 450},
+        "telemetry": {"topic_alpha": 10.2}
+    }
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    messaging.send_message(data_example)

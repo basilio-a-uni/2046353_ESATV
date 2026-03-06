@@ -3,6 +3,8 @@ import json
 import os
 import time
 
+import database
+
 def get_connection():
     rabbit_host = os.getenv('RABBITMQ_HOST', 'localhost')
     while True:
@@ -41,4 +43,5 @@ def start_consuming():
     channel.start_consuming()
 
 if __name__ == "__main__":
+    database.init_db()
     start_consuming()

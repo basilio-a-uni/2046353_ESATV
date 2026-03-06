@@ -15,7 +15,7 @@ services:
       RABBITMQ_LOGS: "error"
 
   ingestion-service:
-    build: ./ingestion-service
+    build: ./source/ingestion-service
     restart: on-failure
     environment:
       PYTHONUNBUFFERED: 1
@@ -26,10 +26,10 @@ services:
       - simulator
 
   processing-engine:
-    build: ./processing-engine
+    build: ./source/processing-engine
     restart: on-failure
     volumes:
-      - automation_data:/data
+      - ./source/data:/data
     environment:
       DATABASE_URL: "/data/rules.db"
       RABBITMQ_HOST: "rabbitmq"
@@ -41,12 +41,9 @@ services:
       - simulator
 
   frontend:
-    build: ./frontend
+    build: ./source/frontend
     restart: on-failure
     ports:
       - "8000:8000"
     depends_on:
       - processing-engine
-
-volumes:
-  automation_data:
