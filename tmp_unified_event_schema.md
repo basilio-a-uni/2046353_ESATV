@@ -14,9 +14,9 @@ For internal sensor and telemetry data
     "status": "string",                  
     "metrics": [                         
         {
-        "name": "string",
-        "value": 0.0,
-        "unit": "string"
+            "name": "string",
+            "value": 0.0,
+            "unit": "string"
         }
     ]
 }
