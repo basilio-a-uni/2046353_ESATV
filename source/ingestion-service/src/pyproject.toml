@@ -9,5 +9,6 @@ dependencies = [
     "requests>=2.32.5",
     "pika",
     "sseclient-py>=1.9.0",
+    "aiohttp",
     "websockets>=16.0",
 ]
