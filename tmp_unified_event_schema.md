@@ -11,12 +11,12 @@ For internal sensor and telemetry data
     "timestamp": "2036-03-06T10:42:10Z", 
     "source_id": "string",               
     "source_type": "string",             
-    "status": "string",                  
-    "metrics": [                         
+    "status": "string",                                         
+    "metrics": [
         {
-        "name": "string",
-        "value": 0.0,
-        "unit": "string"
+          "name": "string",
+          "value": 0.0,
+          "unit": "string"
         }
     ]
 }
