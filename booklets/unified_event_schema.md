@@ -16,7 +16,7 @@ All numeric observations are mapped into the metrics array. This approach allows
   "timestamp": "2036-03-06T10:42:10Z",
   "source_id": "string",
   "source_type": "rest | telemetry",
-  "status": "ok | warning",
+  "status": "ok | warning | IDLE | PRESSURIZING | DEPRESSURIZING",
   "metrics": [
     {
       "name": "string",

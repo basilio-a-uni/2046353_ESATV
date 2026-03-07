@@ -76,7 +76,7 @@ def unify_topic(topic: str, data: dict) -> dict:
 
     # Regole specifiche per airlock.v1
     elif topic in TOPIC_AIRLOCK_V1:
-        new_data["status"] = "ok"
+        new_data["status"] = data["last_state"]
         new_data["metrics"] = [
             {"name": "cycles_per_hour", "value": data["cycles_per_hour"], "unit": "cycles/hour"}
         ]
