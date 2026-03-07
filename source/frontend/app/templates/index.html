@@ -518,7 +518,6 @@
 </body>
 </html> -->
 
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -534,14 +533,14 @@
             --panel-bg-habitat: #2A56C6; 
             --panel-bg-health: #35D01A; 
             --panel-bg-bio: #1e1b4b; 
-            --panel-bg-infra: #27272a; /* Grigio scuro industriale per l'infrastruttura */
+            --panel-bg-infra: #27272a; 
             --text-main: #ffffff;
             --text-panel-dark: #2A56C6; 
             --text-muted: #94a3b8;
             --accent: #2A56C6; 
             --ok-color: #35D01A;
             --warn-color: #f33a1e; 
-            --infra-accent: #fbbf24; /* Giallo/Ambra per i sistemi di potenza */
+            --infra-accent: #fbbf24; 
         }
 
         body {
@@ -587,10 +586,10 @@
         }
         
         .navbar-link {
-          position: relative; /* Necessario per posizionare la linea */
+          position: relative; 
           text-decoration: none;
           padding: 10px 15px;
-          color: #ffffff; /* Colore del testo (cambialo se necessario) */
+          color: #ffffff; 
           transition: color 0.3s ease;
         }
 
@@ -598,12 +597,12 @@
         .navbar-link.active::after {
             content: "";
             position: absolute;
-            bottom: -5px; /* Distanza dal testo */
-            left: 15%;    /* Inizia un po' dopo il bordo sinistro per centrarla */
-            width: 70%;   /* Lunghezza della linea rispetto al testo */
-            height: 3px;  /* Spessore della linea */
-            background-color: #00ff88; /* Verde brillante (Neon Green) */
-            box-shadow: 0 0 10px #00ff88; /* Effetto bagliore (opzionale) */
+            bottom: -5px; 
+            left: 15%;    
+            width: 70%;   
+            height: 3px;  
+            background-color: #00ff88; 
+            box-shadow: 0 0 10px #00ff88; 
             border-radius: 2px;
         }
 
@@ -612,7 +611,7 @@
 
         /* Pannelli generici - Layout a griglia */
         .grid-2x2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; } /* Griglia per i 5 elementi infra */
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; } 
         
         .metric-card { display: flex; flex-direction: column; align-items: center; text-align: center; background-color: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px; }
         .metric-card-value { font-size: 1.8em; font-weight: bold; color: var(--ok-color); }
@@ -646,7 +645,6 @@
         .infrastructure-panel .panel-title { color: #ffffff; }
         .infrastructure-panel .metric-card-value { color: #ffffff; font-size: 1.6em; }
         .infrastructure-panel .metric-card-label { color: #ffffff; font-size: 1.3em; }
-        
 
         /* Animazione */
         .update-flash { animation: flash 0.3s ease; }
@@ -862,15 +860,16 @@
             'air_quality_pm25': { valId: 'pm25-value', timeId: 'pm25-time', metricTarget: 'pm2.5' },
             'water_tank_level': { valId: 'water-value', timeId: 'water-time', metricTarget: 'level_pct' },
 
-            // Infrastructure (NUOVI)
+            // Infrastructure
             'mars/telemetry/solar_array':       { valId: 'solar-value', timeId: 'solar-time', metricTarget: 'power_kw' },
-            'mars/telemetry/power_bus':         { valId: 'bus-value', timeId: 'bus-time', metricTarget: 'power_kw' }, // o voltage_v
+            'mars/telemetry/power_bus':         { valId: 'bus-value', timeId: 'bus-time', metricTarget: 'power_kw' },
             'mars/telemetry/power_consumption': { valId: 'cons-value', timeId: 'cons-time', metricTarget: 'power_kw' },
             'mars/telemetry/thermal_loop':      { valId: 'therm-value', timeId: 'therm-time', metricTarget: 'temperature_c' },
             'mars/telemetry/airlock':           { valId: 'airlock-value', timeId: 'airlock-time', metricTarget: 'cycles_per_hour' }
         };
 
-        socket.on('telemetry_update', function(data) {
+        // 4. LOGICA UNIFICATA PER L'AGGIORNAMENTO DEI DATI (USATA DA WEBSOCKET E CACHE)
+        function processTelemetryData(data) {
             const sourceId = data.source_id;
             const config = sourceMap[sourceId];
 
@@ -893,7 +892,27 @@
                 const timeEl = document.getElementById(config.timeId);
                 if(timeEl) timeEl.innerText = timeString;
             }
+        }
+
+        // 5. RECUPERO DATI IN CACHE AL CARICAMENTO DELLA PAGINA
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/api/latest-telemetry')
+                .then(response => {
+                    if (!response.ok) throw new Error("API /api/latest-telemetry non ancora implementata o errore server.");
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Cache telemetria recuperata:", data);
+                    for (const sourceId in data) {
+                        const latestPayload = data[sourceId];
+                        processTelemetryData(latestPayload);
+                    }
+                })
+                .catch(err => console.warn("Errore recupero cache (tutto ok se il backend non è ancora pronto):", err));
         });
+
+        // 6. GESTIONE WEBSOCKET
+        socket.on('telemetry_update', processTelemetryData);
 
         socket.on('connect', () => console.log('Connesso al Server Flask (WebSockets)!'));
         socket.on('disconnect', () => console.log('Disconnesso dal Server Flask.'));

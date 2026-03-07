@@ -176,6 +176,13 @@ def toggle_actuator(actuator_id):
     return jsonify({"status": "error", "message": "Actuator not found"}), 404
 
 
+
+@app.route('/telemetry/latest', methods=['GET'])
+def get_latest_telemetry():
+    """Restituisce tutta la cache degli ultimi messaggi ricevuti"""
+    return jsonify(state.sensor_data)
+
+
 if __name__ == "__main__":
     database.init_db()
     

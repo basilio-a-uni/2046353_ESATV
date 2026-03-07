@@ -147,6 +147,19 @@ def proxy_actuator_toggle(actuator_id):
         return jsonify({"status": "error"}), 500
 
 
+@app.route("/api/latest-telemetry")
+def proxy_latest_telemetry():
+    """Proxy per recuperare i dati in cache dal Processing Engine"""
+    try:
+        response = requests.get(f"{ENGINE_URL}/telemetry/latest", timeout=2)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        return jsonify({})
+    except Exception as e:
+        print(f"Errore nel recupero della cache telemetria: {e}")
+        return jsonify({})
+
+
 if __name__ == "__main__":
     # Avviamo il consumer RabbitMQ in un thread in background
     socketio.start_background_task(rabbitmq_consumer)
