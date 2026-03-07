@@ -21,7 +21,7 @@ class State():
         rows = cur.fetchall()
 
         for row in rows:
-            current_rules[row]
+            current_rules[row[0]].append(row)
             
 
 
@@ -66,5 +66,6 @@ def start_consuming():
 
 if __name__ == "__main__":
     state = State()
+    state.load_rules()
     database.init_db()
     start_consuming()
