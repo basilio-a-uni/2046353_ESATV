@@ -56,14 +56,14 @@ class State():
         cur = conn.cursor()
 
         cur.execute("INSERT INTO rules VALUES(?, ?, ?, ?, ?, ?, ?)",
-                (self.sensor_name, self.metric, self.operator, self.sensor_target_value,
-                self.actuator_name, self.actuator_set_value, self.enable)
+                (rule.sensor_name, rule.metric, rule.operator, rule.sensor_target_value,
+                rule.actuator_name, rule.actuator_set_value, rule.enable)
             )
         conn.commit()
         cur.close()
         conn.close()
 
-        self.current_rules[self.sensor_name].append(rule)
+        self.current_rules[rule.sensor_name].append(rule) # Anche qui usa rule.sensor_name
 
 
     def get_rules_about(self, string):
@@ -78,7 +78,7 @@ class State():
                     continue
                 if rule.metric == metric["name"] and rule.is_not_respected(metric["value"]):
                     if self.current_actuators_status[rule.actuator_name] != rule.actuator_set_value:
-                        print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric["value"]} (should be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
+                        print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric["value"]} (should not be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
                         self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
                     else:
-                        print(f"[Broken rule] Actuator was already to set value")
+                        print("[Broken rule] Actuator was already to set value")
