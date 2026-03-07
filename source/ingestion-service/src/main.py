@@ -308,9 +308,8 @@ async def poll_rest(sensor):
 
 async def main():
     await asyncio.gather(
-            poll_rest("greenhouse_temperature")
-            #*(consume_topic(t) for t in TOPICS),
-            #*(poll_rest(s) for s in REST_SENSORS)
+            *(consume_topic(t) for t in TOPICS),
+            *(poll_rest(s) for s in REST_SENSORS)
         )
 
 if __name__ == "__main__":
