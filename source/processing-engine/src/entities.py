@@ -30,10 +30,11 @@ class Rule():
 
 class State():
     # Sistemato l'init per evitare la mutabilità dei default di Python (defaultdict e dict vuoti)
-    def __init__(self, sensor_data=None, current_rules=None, current_actuators_status=None):
+    def __init__(self, sensor_data=None, current_rules=None, current_actuators_status=None, on_actuator_change=None):
         self.sensor_data = sensor_data or {}
         self.current_rules = current_rules or defaultdict(list)
         self.current_actuators_status = current_actuators_status or {}
+        self.on_actuator_change = on_actuator_change # Callback per avvisare chi ascolta
 
     def load_persistent_rules(self):
         conn = sqlite3.connect(os.getenv("DATABASE_URL"))
@@ -107,15 +108,21 @@ class State():
         source_id = data.get("source_id")
         if not source_id: return
         
+        # Aggiorna i dati grezzi del sensore (ti serve per la rotta /sensors)
+        self.sensor_data[source_id] = data
+
         rules_to_check = self.get_rules_about(source_id)
         for rule in rules_to_check:
             if not rule.enabled:
                 continue
             for metric in data.get("metrics", []):
-                if rule.metric == metric["name"] and rule.is_not_respected(metric["value"]):
+                # ... (il resto della logica invariata fino al cambio attuatore) ...
                     if self.current_actuators_status.get(rule.actuator_name) != rule.actuator_set_value:
-                        # Sistemata formattazione stringa per evitare conflitti con gli apici
                         print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric['value']} (should not be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
                         self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
+                        
+                        # NUOVO: Chiama la callback se esiste
+                        if self.on_actuator_change:
+                            self.on_actuator_change(rule.actuator_name, rule.actuator_set_value)
                     else:
                         print("[Broken rule] Actuator was already to set value")

@@ -42,10 +42,14 @@ def rabbitmq_consumer():
 
     def callback(ch, method, properties, body):
         try:
-            # Decodifichiamo l'Unified Schema dal JSON
             data = json.loads(body.decode('utf-8'))
-            # Lo spariamo al browser connesso via WebSocket
-            socketio.emit('telemetry_update', data)
+            
+            # NUOVO: Smistiamo il messaggio in base al tipo
+            if data.get("type") == "actuator_update":
+                socketio.emit('actuator_update', data)
+            else:
+                socketio.emit('telemetry_update', data)
+                
         except Exception as e:
             print(f"Errore nel parsing del messaggio: {e}")
 

@@ -49,6 +49,23 @@ def start_consuming(state):
     print("[*] Processing Engine in ascolto su RabbitMQ...")
     channel.start_consuming()
 
+# NUOVO: Funzione per pubblicare l'aggiornamento degli attuatori su RabbitMQ
+def publish_actuator_update(actuator_id, new_state):
+    try:
+        connection = get_connection()
+        channel = connection.channel()
+        channel.exchange_declare(exchange='mars_telemetry_exchange', exchange_type='fanout')
+        
+        message = {
+            "type": "actuator_update",
+            "actuator_id": actuator_id,
+            "state": new_state
+        }
+        channel.basic_publish(exchange='mars_telemetry_exchange', routing_key='', body=json.dumps(message))
+        connection.close()
+    except Exception as e:
+        print(f"Errore pubblicazione aggiornamento attuatore: {e}")
+
 # --- ROTTE PER IL FRONTEND ---
 
 @app.route('/rules', methods=['GET', 'POST'])
@@ -103,10 +120,6 @@ def toggle_rule(rule_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
-
-
-
 # --- NUOVI ENDPOINT PER SENSORI E ATTUATORI ---
 
 @app.route('/sensors', methods=['GET'])
@@ -155,17 +168,20 @@ def toggle_actuator(actuator_id):
     if actuator_id in state.current_actuators_status:
         state.current_actuators_status[actuator_id] = new_state
         print(f"[Manual Control] Actuator {actuator_id} set to {new_state}")
+        
+        # NUOVO: Avvisiamo il frontend (e chiunque altro ascolti) che l'attuatore è cambiato
+        publish_actuator_update(actuator_id, new_state)
+        
         return jsonify({"status": "success"}), 200
     return jsonify({"status": "error", "message": "Actuator not found"}), 404
-
-
 
 
 if __name__ == "__main__":
     database.init_db()
     
     global state
-    state = State()
+    # NUOVO: Passiamo la callback per notificare i cambiamenti
+    state = State(on_actuator_change=publish_actuator_update) 
     state.load_persistent_rules()
     state.load_persistent_actuators()
     

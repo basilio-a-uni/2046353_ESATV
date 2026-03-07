@@ -451,7 +451,6 @@
 </html> -->
 
 
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -638,7 +637,8 @@
                     <div class="act-row">
                         <span>{{ actuator.actuator_id if actuator.actuator_id else actuator.name }}</span>
                         <label class="switch">
-                            <input type="checkbox" {% if actuator.state == 'ON' %}checked{% endif %} 
+                            <input type="checkbox" id="toggle-{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}"
+                                   {% if actuator.state == 'ON' %}checked{% endif %} 
                                    onchange="toggleActuator('{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}', this.checked)">
                             <span class="slider"></span>
                         </label>
@@ -720,6 +720,26 @@
                     // Effetto flash per confermare l'aggiornamento visivamente
                     badge.style.opacity = '0.3';
                     setTimeout(() => badge.style.opacity = '1', 200);
+                }
+            }
+        });
+
+        // NUOVO: Ascolta i cambiamenti degli attuatori in tempo reale
+        socket.on('actuator_update', function(data) {
+            const actuatorId = data.actuator_id;
+            const newState = data.state; // "ON" o "OFF"
+            
+            // Trova l'interruttore corretto usando l'ID che abbiamo appena aggiunto
+            const toggleElement = document.getElementById(`toggle-${actuatorId}`);
+            
+            if (toggleElement) {
+                // Controlliamo se va aggiornato per evitare loop infiniti se siamo stati noi a cliccarlo
+                const isCurrentlyChecked = toggleElement.checked;
+                const shouldBeChecked = (newState === "ON");
+                
+                if (isCurrentlyChecked !== shouldBeChecked) {
+                    toggleElement.checked = shouldBeChecked;
+                    console.log(`[WebSocket] L'attuatore ${actuatorId} è scattato su ${newState} in automatico!`);
                 }
             }
         });
