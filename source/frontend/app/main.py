@@ -3,8 +3,9 @@ import os
 import json
 import time
 import pika
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mars-secret-key'  # for flask websocket
@@ -57,6 +58,66 @@ def rabbitmq_consumer():
 def home():
     # Renderizza la nostra dashboard
     return render_template("index.html")
+
+
+
+ENGINE_URL = "http://processing-engine:8001"
+
+# @app.route("/rules", methods=["GET", "POST"])
+# def manage_rules():
+#     if request.method == "POST":
+#         # Estraiamo i dati dal form HTML
+#         rule_data = {
+#             "sensor_name": request.form.get("sensor_name"),
+#             "metric": request.form.get("metric"),
+#             "operator": request.form.get("operator"),
+#             "sensor_target_value": request.form.get("sensor_target_value"),
+#             "actuator_name": request.form.get("actuator_name"),
+#             "actuator_set_value": request.form.get("actuator_set_value")
+#         }
+        
+#         # Inoltriamo il comando al Processing Engine via API REST
+#         try:
+#             requests.post(f"{ENGINE_URL}/rules", json=rule_data, timeout=5)
+#         except Exception as e:
+#             print(f"Errore di comunicazione col Processing Engine: {e}")
+            
+#     # Se è una GET, o dopo aver inviato la POST, mostriamo la pagina
+#     return render_template("rules.html")
+
+@app.route("/rules", methods=["GET", "POST"])
+def manage_rules():
+    if request.method == "POST":
+        # 1. Estraiamo i dati dal form HTML
+        rule_data = {
+            "sensor_name": request.form.get("sensor_name"),
+            "metric": request.form.get("metric"),
+            "operator": request.form.get("operator"),
+            "sensor_target_value": request.form.get("sensor_target_value"),
+            "actuator_name": request.form.get("actuator_name"),
+            "actuator_set_value": request.form.get("actuator_set_value")
+        }
+        
+        # 2. Inviamo la nuova regola al motore
+        try:
+            requests.post(f"{ENGINE_URL}/rules", json=rule_data, timeout=5)
+        except Exception as e:
+            print(f"Errore di invio regola: {e}")
+            
+    # --- NOVITÀ: RECUPERIAMO LA LISTA AGGIORNATA ---
+    rules_list = []
+    try:
+        # Facciamo una GET al Processing Engine per avere tutte le regole
+        response = requests.get(f"{ENGINE_URL}/rules", timeout=5)
+        if response.status_code == 200:
+            rules_list = response.json()
+    except Exception as e:
+        print(f"Errore nel recupero regole: {e}")
+
+    # 3. Passiamo existing_rules al template
+    return render_template("rules.html", existing_rules=rules_list)
+
+
 
 if __name__ == "__main__":
     # Avviamo il consumer RabbitMQ in un thread in background

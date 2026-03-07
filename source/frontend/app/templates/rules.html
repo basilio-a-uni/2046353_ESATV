@@ -1,0 +1,248 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Base | Rule Management</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent: #ea580c;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 30px; }
+        .form-panel { background-color: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #94a3b8; font-weight: bold;}
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #334155; background-color: #0f172a; color: white; box-sizing: border-box; }
+        button { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1.1em; width: 100%; margin-top: 10px;}
+        button:hover { background-color: #c2410c; }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: var(--accent); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚙️ Automation Rules</h1>
+    </header>
+
+    <div class="form-panel">
+        <form action="/rules" method="POST">
+            <div class="form-group">
+                <label>Sensor Name (es. mars/telemetry/greenhouse_temperature)</label>
+                <input type="text" name="sensor_name" required placeholder="mars/telemetry/...">
+            </div>
+            
+            <div class="form-group">
+                <label>Metric (es. temperature_c)</label>
+                <input type="text" name="metric" required>
+            </div>
+
+            <div class="form-group">
+                <label>Operator</label>
+                <select name="operator">
+                    <option value=">">Greater than (>)</option>
+                    <option value="<">Less than (<)</option>
+                    <option value="=">Equal to (=)</option>
+                    <option value=">=">Greater or Equal (>=)</option>
+                    <option value="<=">Less or Equal (<=)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Target Value</label>
+                <input type="number" step="0.01" name="sensor_target_value" required>
+            </div>
+
+            <div class="form-group">
+                <label>Actuator to Trigger</label>
+                <select name="actuator_name">
+                    <option value="cooling_fan">Cooling Fan</option>
+                    <option value="habitat_heater">Habitat Heater</option>
+                    <option value="entrance_humidifier">Entrance Humidifier</option>
+                    <option value="hall_ventilation">Hall Ventilation</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Actuator Action</label>
+                <select name="actuator_set_value">
+                    <option value="ON">Turn ON</option>
+                    <option value="OFF">Turn OFF</option>
+                </select>
+            </div>
+
+            <button type="submit">Deploy New Rule</button>
+        </form>
+    </div>
+
+    <a href="/" class="nav-link">← Back to Dashboard</a>
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Base | Rule Management</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent: #ea580c;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 800px; /* Allargato un po' per far stare la tabella */
+            margin: 0 auto;
+        }
+        header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 30px; }
+        
+        /* Stili per la Tabella */
+        .rules-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .rules-table th, .rules-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        .rules-table th {
+            background-color: #0f172a;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        .rules-table tr:last-child td { border-bottom: none; }
+        .badge {
+            background-color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #38bdf8;
+        }
+
+        .form-panel { background-color: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #94a3b8; font-weight: bold;}
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #334155; background-color: #0f172a; color: white; box-sizing: border-box; }
+        button { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1.1em; width: 100%; margin-top: 10px;}
+        button:hover { background-color: #c2410c; }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: var(--accent); text-decoration: none; }
+        h2 { border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚙️ Automation Rules</h1>
+    </header>
+
+    <h2>📋 Active Rules</h2>
+    <table class="rules-table">
+        <thead>
+            <tr>
+                <th>Sensor / Metric</th>
+                <th>Condition</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rule in existing_rules %}
+            <tr>
+                <td>
+                    <small style="display:block; color:#94a3b8;">{{ rule.sensor_name }}</small>
+                    <strong>{{ rule.metric }}</strong>
+                </td>
+                <td>
+                    <span class="badge">{{ rule.operator }} {{ rule.sensor_target_value }}</span>
+                </td>
+                <td>
+                    Set <span style="color:#fbbf24">{{ rule.actuator_name }}</span> to <strong>{{ rule.actuator_set_value }}</strong>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" style="text-align: center; color: #94a3b8; padding: 30px;">
+                    No rules deployed yet. Use the form below to create one.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>➕ Add New Rule</h2>
+    <div class="form-panel">
+        <form action="/rules" method="POST">
+            <div class="form-group">
+                <label>Sensor Name</label>
+                <input type="text" name="sensor_name" required placeholder="e.g. greenhouse_temperature">
+            </div>
+            
+            <div class="form-group">
+                <label>Metric</label>
+                <input type="text" name="metric" required placeholder="e.g. temperature_c">
+            </div>
+
+            <div class="form-group">
+                <label>Operator</label>
+                <select name="operator">
+                    <option value=">">Greater than (>)</option>
+                    <option value="<">Less than (<)</option>
+                    <option value="=">Equal to (=)</option>
+                    <option value=">=">Greater or Equal (>=)</option>
+                    <option value="<=">Less or Equal (<=)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Target Value</label>
+                <input type="number" step="0.01" name="sensor_target_value" required>
+            </div>
+
+            <div class="form-group">
+                <label>Actuator to Trigger</label>
+                <select name="actuator_name">
+                    <option value="cooling_fan">Cooling Fan</option>
+                    <option value="habitat_heater">Habitat Heater</option>
+                    <option value="entrance_humidifier">Entrance Humidifier</option>
+                    <option value="hall_ventilation">Hall Ventilation</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Actuator Action</label>
+                <select name="actuator_set_value">
+                    <option value="ON">Turn ON</option>
+                    <option value="OFF">Turn OFF</option>
+                </select>
+            </div>
+
+            <button type="submit">Deploy New Rule</button>
+        </form>
+    </div>
+
+    <a href="/" class="nav-link">← Back to Dashboard</a>
+
+</body>
+</html>
