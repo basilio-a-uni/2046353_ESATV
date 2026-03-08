@@ -778,19 +778,27 @@
         }
 
         .planet-box {
-            flex-grow: 1;
+            display: flex;
+            align-items: stretch;
+            /* Forza i figli a occupare tutta l'altezza */
+            justify-content: center;
+            align-self: stretch;
+            /* Forza se stesso a occupare l'altezza del padre */
             background: var(--bg-content);
             border-radius: 20px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
-            min-height: 150px;
+            flex-grow: 1;
+            /* Se è dentro un contenitore flex orizzontale, serve un'altezza */
+            height: 100%;
         }
 
         .planet-img {
-            width: 450px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Taglia l'eccesso ma riempie tutto */
+            display: block;
+            /* Rimuove spazi vuoti sotto l'immagine */
         }
     </style>
 </head>
