@@ -39,9 +39,10 @@ class Rule():
             raise ValueError(f"Operator '{self.operator}' is not a valid operator for a rule")
 
 class State():
-    def __init__(self, sensor_data=None, current_rules=None, current_actuators_status=None, on_actuator_change=None):
+    def __init__(self, sensor_data=None, current_rules=None, triggered_rules_history=None, current_actuators_status=None, on_actuator_change=None):
         self.sensor_data = sensor_data or {}
         self.current_rules = current_rules or defaultdict(list)
+        self.triggered_rules_history = triggered_rules_history or set()
         self.current_actuators_status = current_actuators_status or {}
         self.on_actuator_change = on_actuator_change
 
@@ -145,11 +146,17 @@ class State():
             if not rule.enabled:
                 continue
             for metric in data.get("metrics", []):
-                    if self.current_actuators_status.get(rule.actuator_name) != rule.actuator_set_value:
-                        print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric['value']} (should not be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
-                        self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
-                        
-                        if self.on_actuator_change:
+                if self.current_actuators_status.get(rule.actuator_name) != rule.actuator_set_value:
+                    self.triggered_rules_history.add(rule)
+                    print("TRIGGERED A RULE")
+                    print(self.triggered_rules_history)
+                    print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric['value']} (should not be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
+                    self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
+                    
+                    if self.on_actuator_change:
                             self.on_actuator_change(rule.actuator_name, rule.actuator_set_value)
-                    else:
-                        print("[Broken rule] Actuator was already to set value")
+                else:
+                    self.triggered_rules_history.add(rule)
+                    print(self.triggered_rules_history)
+                    print("TRIGGERED A RULE")
+                    print("[Broken rule] Actuator was already to set value")

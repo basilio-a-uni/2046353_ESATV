@@ -147,17 +147,14 @@ def get_sensors():
     source_ids = set(state.sensor_data.keys()) | set(state.current_rules.keys())
     
     for s_id in source_ids:
-        # 1. Deduciamo il tipo corretto (telemetry vs rest)
         if s_id.startswith('mars/telemetry/'):
             source_type = 'telemetry'
         else:
             source_type = 'rest'
             
-        # 2. Recuperiamo lo stato REALE dai dati salvati (se esistono)
         latest_data = state.sensor_data.get(s_id, {})
         current_status = latest_data.get('status', 'OK') # Se è nuovo, diciamo 'OK' di default
         
-        # 3. Restituiamo il formato corretto (Unified Event Schema)
         sensors.append({
             "source_id": s_id,
             "source_type": source_type,
