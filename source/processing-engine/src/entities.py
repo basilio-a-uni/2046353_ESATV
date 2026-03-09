@@ -48,10 +48,6 @@ class State():
         self.current_actuators_status = current_actuators_status or {}
         self.on_actuator_change = on_actuator_change
         self.on_rule_triggered = on_rule_triggered
-<<<<<<< HEAD
-
-=======
->>>>>>> 179418b040d18abbcd23148cddece6a5e3501641
 
     def load_persistent_rules(self):
         conn = sqlite3.connect(os.getenv("DATABASE_URL"))
@@ -151,7 +147,6 @@ class State():
                 continue
 
             for metric in data.get("metrics", []):
-<<<<<<< HEAD
                 if metric["name"] != rule.metric:
                     continue
                 if rule.is_not_respected(metric["value"]):
@@ -162,37 +157,9 @@ class State():
                         
                         if self.on_rule_triggered:
                             self.on_rule_triggered(rule, metric["value"])
-=======
-                if metric.get("name") != rule.metric:
-                    continue
-
-                value = metric.get("value")
-                if value is None:
-                    continue
-
-                if rule.is_not_respected(value):
-                    rule.triggered_at = time.time()
-
-                    if self.current_actuators_status.get(rule.actuator_name) != rule.actuator_set_value:
-                        print(
-                            f"[RULE TRIGGERED] Source: {rule.sensor_name}, "
-                            f"metric: {rule.metric}, value: {value}, "
-                            f"condition: {rule.operator}{rule.sensor_target_value}, "
-                            f"setting {rule.actuator_name} to {rule.actuator_set_value}"
-                        )
-
-                        if self.on_rule_triggered:
-                            self.on_rule_triggered(rule, value)
-
-                        self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
->>>>>>> 179418b040d18abbcd23148cddece6a5e3501641
 
                         if self.on_actuator_change:
                             self.on_actuator_change(rule.actuator_name, rule.actuator_set_value)
                     else:
-<<<<<<< HEAD
                         self.triggered_rules_history[rule.id] = {"triggered_at": time.time(), "last_trigger_value": metric["value"]}
                         print("[Broken rule] Actuator was already to set value")
-=======
-                        print("[RULE TRIGGERED] Actuator already in desired state")
->>>>>>> 179418b040d18abbcd23148cddece6a5e3501641

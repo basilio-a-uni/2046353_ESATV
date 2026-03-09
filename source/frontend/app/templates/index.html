@@ -585,17 +585,6 @@
                 sourceId: 'frontend',
                 durationMs: 4000
             });
-            // SIMULAZIONE DI UN AVVISO DI WARNING PER TEST
-            setTimeout(() => {
-                processTelemetryData({
-                    source_id: "air_quality_pm25",
-                    status: "warning",
-                    timestamp: new Date().toISOString(),
-                    metrics: [
-                        { name: "pm2.5", value: 80, unit: "ug/m3" }
-                    ]
-                });
-            }, 1500);
         }); 
 
         socket.on('disconnect', () => console.log('Disconnesso dal Server Flask.'));
