@@ -332,7 +332,7 @@ All numeric observations are mapped into the metrics array. This approach allows
 - `timestamp` ← `event_time`
 - `source_id` ← `topic`
 - `source_type` ← `"telemetry"`
-- `status` ← `"ok"`
+- `status` ← `last_state`
 - `metrics` contains one entry:
     - `name` ← `"cycles_per_hour"`
     - `value` ← `cycles_per_hour`
