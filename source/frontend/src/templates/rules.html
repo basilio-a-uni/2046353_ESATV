@@ -171,7 +171,7 @@
                 {% for rule in existing_rules %}
                 <div class="rule-card" id="rule-{{ rule.id }}" data-json='{{ rule | tojson | safe }}'>
                     <div class="rule-header">
-                        <h3 class="rule-title">{{ rule.sensor_name | replace('_', ' ') | title }} Protocol</h3>
+                        <h3 class="rule-title">Rule #{{ rule.id }} : {{ rule.sensor_name | replace('_', ' ') | title }} Protocol</h3>
                         <div class="rule-actions">
                             <button class="action-btn" onclick="deleteRule('{{ rule.id }}')" title="Delete">
                                 <img src="{{ url_for('static', filename='icons/trash_52px.png') }}" style="width: 20px;">

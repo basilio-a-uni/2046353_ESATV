@@ -23,7 +23,7 @@ def get_connection():
             print("Successful connection")
             return connection
         except:
-            print(" [!] RabbitMQ not yet started. Retry in 5 seconds.")
+            print("[!] RabbitMQ not yet started. Retry in 5 seconds.")
             time.sleep(5)
 
 
@@ -142,7 +142,8 @@ def handle_rules():
 @app.route('/rules/<int:rule_id>', methods=['DELETE'])
 def delete_rule(rule_id):
     try:
-        state.delete_rule(rule_id) 
+        state.delete_rule(rule_id)
+        del state.triggered_rules_history[rule_id]
         return jsonify({"status": "success", "message": f"Rule {rule_id} deleted"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

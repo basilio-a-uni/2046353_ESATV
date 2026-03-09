@@ -16,7 +16,7 @@ def get_connection():
             )
             return connection
         except pika.exceptions.AMQPConnectionError:
-            print("[!] RabbitMQ non ancora pronto. Riprovo tra 5 secondi...")
+            print("[!] RabbitMQ not yet started. Retry in 5 seconds.")
             time.sleep(5)
 
 def send_message(unified_data):

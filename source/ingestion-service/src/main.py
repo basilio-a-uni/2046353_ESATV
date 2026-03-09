@@ -157,7 +157,7 @@ async def consume_topic(topic):
                     # print("Stream telemetry:")
                     # print(f"[{topic}] Dati: {data}")
         except Exception as e:
-            print(f"[!] Errore su {topic}: {e}. Riprovo tra 5s...")
+            print(f"[!] STREAM TELEMENTRY error {topic}: {e}")
             await asyncio.sleep(5)
 
 
