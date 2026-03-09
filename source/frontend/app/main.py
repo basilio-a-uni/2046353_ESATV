@@ -1,4 +1,3 @@
-# frontend/app.py
 import os
 import json
 import time
@@ -44,9 +43,10 @@ def rabbitmq_consumer():
         try:
             data = json.loads(body.decode('utf-8'))
             
-            # NUOVO: Smistiamo il messaggio in base al tipo
             if data.get("type") == "actuator_update":
                 socketio.emit('actuator_update', data)
+            elif data.get("type") == "rule_triggered":
+                socketio.emit('rule_triggered', data)
             else:
                 socketio.emit('telemetry_update', data)
                 

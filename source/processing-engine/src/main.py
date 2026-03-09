@@ -58,7 +58,7 @@ def start_consuming(state):
     print("[*] Processing Engine in ascolto su RabbitMQ")
     channel.start_consuming()
 
-# NUOVO: Funzione per pubblicare aggiornamenti su RabbitMQ
+# Funzioni per pubblicare aggiornamenti su RabbitMQ
 def publish_actuator_update(actuator_id, new_state):
     try:
         connection = get_connection()
@@ -103,7 +103,6 @@ def publish_rule_triggered(rule, actual_value):
     except Exception as e:
         print(f"Errore pubblicazione evento rule_triggered: {e}")
 
-
 # --- ROTTE PER IL FRONTEND ---
 
 @app.route('/rules', methods=['GET', 'POST'])
@@ -142,7 +141,8 @@ def handle_rules():
 @app.route('/rules/<int:rule_id>', methods=['DELETE'])
 def delete_rule(rule_id):
     try:
-        state.delete_rule(rule_id) 
+        state.delete_rule(rule_id)
+        del state.triggered_rules_history[int(rule_id)]
         return jsonify({"status": "success", "message": f"Rule {rule_id} deleted"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

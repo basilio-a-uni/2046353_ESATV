@@ -211,7 +211,7 @@
                 <input type="hidden" name="id" id="field-id">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Sensor Name</label>
+                        <label>Sensor Name</labe19.88l>
                         <input type="text" name="sensor_name" id="field-sensor" required placeholder="greenhouse_temp">
                     </div>
                     <div class="form-group">
@@ -230,7 +230,7 @@
                     </div>
                     <div class="form-group">
                         <label>Target Value</label>
-                        <input type="number" step="0.01" name="sensor_target_value" id="field-value" required>
+                        <input type="number" step="0.1" name="sensor_target_value" id="field-value" required>
                     </div>
                     <div class="form-group">
                         <label>Actuator</label>
@@ -288,15 +288,18 @@
             const formData = new FormData(this);
             const ruleData = Object.fromEntries(formData.entries());
 
-            if (ruleData.id && ruleData.id !== "") {
+            const isUpdate = ruleData.id && ruleData.id.trim() !== "";
+            if (isUpdate) {
                 const originalCard = document.getElementById(`rule-${ruleData.id}`);
                 if (originalCard) {
                     // Recuperiamo lo stato 'enabled' dal JSON salvato nel data-attribute della card
                     const originalData = JSON.parse(originalCard.dataset.json);
                     ruleData.enabled = originalData.enabled;
+                } else {
+                    ruleData.enabled = true;
                 }
             }
-            const isUpdate = ruleData.id !== undefined;
+            
             const endpoint = isUpdate ? `${API_BASE_URL}/rules/update` : `${API_BASE_URL}/rules`;
             
             fetch(endpoint, {

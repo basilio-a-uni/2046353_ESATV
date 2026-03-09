@@ -424,7 +424,6 @@
             }, durationMs);
         }
 
-        // 1. CHIAMATA REST PER L'HEALTH STATUS
         async function fetchHealthStatus() {
             try {
                 const response = await fetch('http://localhost:8080/health', {
@@ -459,7 +458,6 @@
         fetchHealthStatus();
         setInterval(fetchHealthStatus, 5000);
 
-        // 2. FUNZIONE ANIMAZIONE
         function updateDOMElement(id, valueText) {
             const el = document.getElementById(id);
             if (el && el.innerText !== valueText) {
@@ -470,7 +468,6 @@
             }
         }
 
-        // 3. MAPPA AGGIORNATA
         const sourceMap = {
             // Habitat
             'greenhouse_temperature': { valId: 'temp-value', timeId: 'temp-time', metricTarget: 'temperature' },
@@ -496,12 +493,10 @@
             'mars/telemetry/airlock':           { valId: 'airlock-value', timeId: 'airlock-time', metricTarget: 'cycles_per_hour' }
         };
 
-        // 4. LOGICA UNIFICATA PER L'AGGIORNAMENTO DEI DATI (USATA DA WEBSOCKET E CACHE)
         function processTelemetryData(data) {
             const sourceId = data.source_id;
             const config = sourceMap[sourceId];
 
-            // CONTROLLO WARNING SENSORI
             const currentStatus = (data.status || '').toLowerCase();
             const previousStatus = sensorLastStatus.get(sourceId);
 
@@ -541,7 +536,6 @@
             }
         }
 
-        // 5. RECUPERO DATI IN CACHE AL CARICAMENTO DELLA PAGINA
         document.addEventListener("DOMContentLoaded", function() {
             fetch('/api/latest-telemetry')
                 .then(response => {
@@ -558,10 +552,22 @@
                 .catch(err => console.warn("Errore recupero cache (tutto ok se il backend non è ancora pronto):", err));
         });
 
-        // 6. GESTIONE WEBSOCKET
         socket.on('telemetry_update', processTelemetryData);
         
-        // AVVISI DI CONNESSIONE E WARNING
+
+        socket.on('rule_triggered', (data) => {
+            showNotification({
+                type: 'rule',
+                title: 'Rule triggered',
+                message: `${data.sensor_name}.${data.metric} ${data.operator} ${data.sensor_target_value} → ${data.actuator_name} set to ${data.actuator_set_value} (current value: ${data.actual_value})`,
+                sourceId: data.sensor_name,
+                timestamp: data.timestamp,
+                dedupeKey: `rule:${data.rule_id}:${data.actuator_set_value}`,
+                cooldownMs: 4000,
+                durationMs: 7000
+            });
+        });
+
         socket.on('connect', () => {
             console.log('Connesso al Server Flask (WebSockets)!');
             showNotification({
