@@ -149,27 +149,27 @@ def sensors_actuators():
     sensors_list = []
     actuators_list = []
     descriptions_map = {
-        # Sensori Ambientali e Moduli
-        "corridor_pressure": "Pressione atmosferica nei condotti di collegamento tra i moduli.",
-        "air_quality_voc": "Concentrazione di composti organici volatili nell'aria abitabile.",
-        "air_quality_pm25": "Monitoraggio polveri sottili e particolato in sospensione.",
-        "entrance_humidity": "Livello di umidità relativa rilevato nel modulo d'ingresso.",
-        "co2_hall": "Concentrazione di anidride carbonica nel corridoio principale.",
-        "water_tank_level": "Livello di riempimento dei serbatoi idrici centrali.",
-        "test": "Canale di test per la verifica dei protocolli di comunicazione.",
+        # Environmental Sensors and Modules
+        "corridor_pressure": "Atmospheric pressure inside the connecting corridors between modules.",
+        "air_quality_voc": "Concentration of volatile organic compounds in breathable air.",
+        "air_quality_pm25": "Monitoring of fine particulate matter and suspended particles.",
+        "entrance_humidity": "Relative humidity level detected in the entrance module.",
+        "co2_hall": "Carbon dioxide concentration in the main corridor.",
+        "water_tank_level": "Fill level of the central water storage tanks.",
+        "test": "Test channel used to verify communication protocols.",
         
-        # Coltivazioni e Biosfera
-        "hydroponic_ph": "Acidità della soluzione nutritiva nel sistema idroponico.",
-        "greenhouse_temperature": "Temperatura ambiente all'interno della serra botanica.",
+        # Cultivation and Biosphere
+        "hydroponic_ph": "Acidity level of the nutrient solution in the hydroponic system.",
+        "greenhouse_temperature": "Ambient temperature inside the botanical greenhouse.",
         
-        # Stream di Telemetria Avanzata (MQTT/Telemetry)
-        "mars/telemetry/life_support": "Stato operativo del sistema primario di supporto vitale.",
-        "mars/telemetry/thermal_loop": "Monitoraggio del fluido termovettore per il riscaldamento base.",
-        "mars/telemetry/solar_array": "Efficienza e output energetico dei pannelli fotovoltaici.",
-        "mars/telemetry/airlock": "Integrità strutturale e stato della camera di compensazione.",
-        "mars/telemetry/power_consumption": "Assorbimento energetico totale istantaneo della base.",
-        "mars/telemetry/radiation": "Rilevamento radiazioni ionizzanti e attività solare esterna.",
-        "mars/telemetry/power_bus": "Distribuzione del carico elettrico sulla rete principale.",
+        # Advanced Telemetry Streams (MQTT/Telemetry)
+        "mars/telemetry/life_support": "Operational status of the primary life support system.",
+        "mars/telemetry/thermal_loop": "Monitoring of the thermal transfer fluid for base heating.",
+        "mars/telemetry/solar_array": "Efficiency and energy output of the photovoltaic panels.",
+        "mars/telemetry/airlock": "Structural integrity and status of the airlock chamber.",
+        "mars/telemetry/power_consumption": "Total instantaneous energy consumption of the base.",
+        "mars/telemetry/radiation": "Detection of ionizing radiation and external solar activity.",
+        "mars/telemetry/power_bus": "Electrical load distribution across the main power grid.",
     }
     try:
         resp_s = requests.get(f"{ENGINE_URL}/sensors", timeout=2)
