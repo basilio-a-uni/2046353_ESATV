@@ -2,11 +2,12 @@ import pika
 import json
 import os
 import time
-import threading 
+import threading
 from flask import Flask, request, jsonify 
 
 import database
-from entities import State, Rule 
+
+from entities import State, Rule
 
 app = Flask(__name__)
 
@@ -14,7 +15,7 @@ def get_connection():
     rabbit_host = os.getenv('RABBITMQ_HOST', 'localhost')
     while True:
         try:
-            print("Testing connection to RabbitMQ...")
+            print("Testing connection")
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=rabbit_host)
             )
@@ -24,20 +25,27 @@ def get_connection():
             print(" [!] RabbitMQ not yet started. Retry in 5 seconds.")
             time.sleep(5)
 
+
 def inject_callback(state):
     def callback(ch, method, properties, body):
         data = json.loads(body)
-        print(f"Ricevuto dati : {data}")
+        print(f"Ricevuto dati : {data}\n")
+
         state.update(data)
+        
+
         ch.basic_ack(delivery_tag=method.delivery_tag)
     return callback
 
 def start_consuming(state):
     connection = get_connection()
     channel = connection.channel()
+
     channel.exchange_declare(exchange='mars_telemetry_exchange', exchange_type='fanout')
+    
     result = channel.queue_declare(queue='', exclusive=True)
     queue_name = result.method.queue
+    
     channel.queue_bind(exchange='mars_telemetry_exchange', queue=queue_name)
 
     channel.basic_consume(
@@ -46,7 +54,7 @@ def start_consuming(state):
         auto_ack=False
     )
     
-    print("[*] Processing Engine in ascolto su RabbitMQ...")
+    print("[*] Processing Engine in ascolto su RabbitMQ")
     channel.start_consuming()
 
 # NUOVO: Funzione per pubblicare l'aggiornamento degli attuatori su RabbitMQ
@@ -109,6 +117,16 @@ def delete_rule(rule_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+@app.route('/rules/update', methods=['POST'])
+def update_rule():
+    data = request.json
+    try:
+        state.update_rule(data)
+        return jsonify({"status": "success", "message": f"Rule {rule_id} updated"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # NUOVO: Attiva/Disattiva regola
 @app.route('/rules/<int:rule_id>/toggle', methods=['POST'])
 def toggle_rule(rule_id):
@@ -120,6 +138,23 @@ def toggle_rule(rule_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/rules/history', methods=['GET'])
+def get_history():
+    result = []
+    for sensor in state.current_rules:
+        for r in state.current_rules[sensor]:
+            if r.triggered_at:
+                result.append({
+                    "id": r.id,  
+                    "sensor_name": r.sensor_name,
+                    "metric": r.metric,
+                    "operator": r.operator,
+                    "sensor_target_value": r.sensor_target_value,
+                    "triggered_at": r.triggered_at
+                })
+    return jsonify(result)
+    
+
 # --- NUOVI ENDPOINT PER SENSORI E ATTUATORI ---
 
 @app.route('/sensors', methods=['GET'])
@@ -129,17 +164,16 @@ def get_sensors():
     source_ids = set(state.sensor_data.keys()) | set(state.current_rules.keys())
     
     for s_id in source_ids:
-        # 1. Deduciamo il tipo corretto (telemetry vs rest)
+        print(sensors)
+        print(s_id)
         if s_id.startswith('mars/telemetry/'):
             source_type = 'telemetry'
         else:
             source_type = 'rest'
             
-        # 2. Recuperiamo lo stato REALE dai dati salvati (se esistono)
         latest_data = state.sensor_data.get(s_id, {})
         current_status = latest_data.get('status', 'OK') # Se è nuovo, diciamo 'OK' di default
         
-        # 3. Restituiamo il formato corretto (Unified Event Schema)
         sensors.append({
             "source_id": s_id,
             "source_type": source_type,
@@ -176,24 +210,21 @@ def toggle_actuator(actuator_id):
     return jsonify({"status": "error", "message": "Actuator not found"}), 404
 
 
-
 @app.route('/telemetry/latest', methods=['GET'])
 def get_latest_telemetry():
     """Restituisce tutta la cache degli ultimi messaggi ricevuti"""
     return jsonify(state.sensor_data)
 
-
 if __name__ == "__main__":
     database.init_db()
-    
     global state
-    # NUOVO: Passiamo la callback per notificare i cambiamenti
-    state = State(on_actuator_change=publish_actuator_update) 
+
+    state = State(on_actuator_change=publish_actuator_update)
     state.load_persistent_rules()
     state.load_persistent_actuators()
-    
+
     rabbit_thread = threading.Thread(target=start_consuming, args=(state,), daemon=True)
     rabbit_thread.start()
-    
+
     print("[*] Processing Engine API in avvio sulla porta 8001...")
     app.run(host="0.0.0.0", port=8001)
