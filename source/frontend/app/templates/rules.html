@@ -169,8 +169,7 @@
 
             <div class="rules-list">
                 {% for rule in existing_rules %}
-                <div class="rule-card" id="rule-{{ rule.id }}" 
-                     data-json='{{ rule | tojson | safe }}'>
+                <div class="rule-card" id="rule-{{ rule.id }}" data-json='{{ rule | tojson | safe }}'>
                     <div class="rule-header">
                         <h3 class="rule-title">{{ rule.sensor_name | replace('_', ' ') | title }} Protocol</h3>
                         <div class="rule-actions">
@@ -212,11 +211,39 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Sensor Name</label>
-                        <input type="text" name="sensor_name" id="field-sensor" required placeholder="greenhouse_temp">
+                        <!-- <input type="text" name="sensor_name" id="field-sensor" required placeholder="greenhouse_temp"> -->
+                        <select name="sensor_name" id="field-sensor">
+                            <option value="greenhouse_temperature">Greenhouse Temperature</option>
+                            <option value="entrance_humidity">Entrance Humidity</option>
+                            <option value="co2_hall">CO2 Hall</option>
+                            <option value="hydroponic_ph">Hydroponic pH</option>
+                            <option value="water_tank_level">Water Tank Level</option>
+                            <option value="corridor_pressure">Corridor Pressure</option>
+                            <option value="air_quality_pm25">Air Quality PM2.5</option>
+                            <option value="air_quality_voc">Air Quality VOC</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Metric</label>
-                        <input type="text" name="metric" id="field-metric" required placeholder="temp_c">
+                        <!-- <input type="text" name="metric" id="field-metric" required placeholder="temp_c"> -->
+                        <select name="metric" id="field-metric">
+                            <option value="C">°C</option>
+                            <option value="%">%</option>
+                            <option value="percent">percent</option>
+                            <option value="L/min">L/min</option>
+                            <option value="kW">kW</option>
+                            <option value="V">V</option>
+                            <option value="A">A</option>
+                            <option value="kWh">kWh</option>
+                            <option value="cycles/hour">cycles/hour</option>
+                            <option value="ppm">ppm</option>
+                            <option value="kPa">kPa</option>
+                            <option value="L">L</option>
+                            <option value="pH">pH</option>
+                            <option value="ug/m3">ug/m3</option>
+                            <option value="ppb">ppb</option>
+                            <option value="uSv/h">uSv/h</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Operator</label>
@@ -234,7 +261,13 @@
                     </div>
                     <div class="form-group">
                         <label>Actuator</label>
-                        <input type="text" name="actuator_name" id="field-actuator" required placeholder="cooling_fan">
+                        <!-- <input type="text" name="actuator_name" id="field-actuator" required placeholder="cooling_fan"> -->
+                        <select name="actuator_name" id="field-actuator">
+                            <option value="cooling_fan">Cooling Fan</option>
+                            <option value="entrance_humidifier">Entrance Humidifier</option>
+                            <option value="hall_ventilation">Hall Ventilation</option>
+                            <option value="habitat_heater">Habitat Heater</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Action</label>
@@ -288,15 +321,20 @@
             const formData = new FormData(this);
             const ruleData = Object.fromEntries(formData.entries());
 
-            if (ruleData.id && ruleData.id !== "") {
+            // --- FIX: Controlliamo se la stringa è vuota, non se è undefined! ---
+            const isUpdate = ruleData.id && ruleData.id.trim() !== ""; 
+            
+            if (isUpdate) {
                 const originalCard = document.getElementById(`rule-${ruleData.id}`);
                 if (originalCard) {
-                    // Recuperiamo lo stato 'enabled' dal JSON salvato nel data-attribute della card
                     const originalData = JSON.parse(originalCard.dataset.json);
                     ruleData.enabled = originalData.enabled;
                 }
+            } else {
+                // Se è una nuova regola, rimuoviamo l'ID altrimenti il backend si confonde
+                delete ruleData.id; 
             }
-            const isUpdate = ruleData.id !== undefined;
+            
             const endpoint = isUpdate ? `${API_BASE_URL}/rules/update` : `${API_BASE_URL}/rules`;
             
             fetch(endpoint, {
@@ -308,10 +346,13 @@
                 if (!res.ok) throw new Error(`Status: ${res.status}`);
                 return res.json();
             })
-            .then(() => location.reload())
+            .then(() => {
+                closeModal(); // Chiude gentilmente il popup
+                location.reload(); // Ricarica per mostrare i nuovi dati
+            })
             .catch(err => {
                 console.error('Errore:', err);
-                alert('Errore durante il salvataggio.');
+                alert('Errore durante il salvataggio della regola nel Mainframe.');
             });
         });
 
