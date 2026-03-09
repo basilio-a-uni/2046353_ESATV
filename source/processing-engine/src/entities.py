@@ -15,8 +15,6 @@ class Rule():
             self.actuator_name = data[5]
             self.actuator_set_value = data[6]
             self.enabled = bool(data[7])
-            self.triggered_at = None
-            self.last_trigger_value = None
         elif type(data) == dict:
             self.id = data['id']
             self.sensor_name = data['sensor_name']
@@ -26,8 +24,6 @@ class Rule():
             self.actuator_name = data['actuator_name']
             self.actuator_set_value = data['actuator_set_value']
             self.enabled = bool(data["enabled"])
-            self.triggered_at = None
-            self.last_trigger_value = None
 
     def is_not_respected(self, value):
         if self.operator == ">":
@@ -47,6 +43,7 @@ class State():
     def __init__(self, sensor_data=None, current_rules=None, triggered_rules_history=None, current_actuators_status=None, on_actuator_change=None):
         self.sensor_data = sensor_data or {}
         self.current_rules = current_rules or defaultdict(list)
+        self.triggered_rules_history = triggered_rules_history or {}
         self.current_actuators_status = current_actuators_status or {}
         self.on_actuator_change = on_actuator_change
 
@@ -149,14 +146,12 @@ class State():
                 continue
             for metric in data.get("metrics", []):
                 if self.current_actuators_status.get(rule.actuator_name) != rule.actuator_set_value:
-                    rule.triggered_at = time.time()
-                    rule.last_trigger_value = metric['value']
+                    self.triggered_rules_history[rule.id] = {"triggered_at": time.time(), "last_trigger_value": metric["value"]}
                     print(f"[Broken rule] Source: {rule.sensor_name}, metric: {rule.metric}, value: {metric['value']} (should not be {rule.operator}{rule.sensor_target_value}), setting {rule.actuator_name} to {rule.actuator_set_value}")
                     self.current_actuators_status[rule.actuator_name] = rule.actuator_set_value
                     
                     if self.on_actuator_change:
                         self.on_actuator_change(rule.actuator_name, rule.actuator_set_value)
                 else:
-                    rule.triggered_at = time.time()
-                    rule.last_trigger_value = metric['value']
+                    self.triggered_rules_history[rule.id] = {"triggered_at": time.time(), "last_trigger_value": metric["value"]}
                     print("[Broken rule] Actuator was already to set value")

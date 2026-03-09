@@ -145,15 +145,15 @@ def history():
     result = []
     for sensor in state.current_rules:
         for r in state.current_rules[sensor]:
-            if r.triggered_at:
+            if r.id in state.triggered_rules_history:
                 result.append({
                     "id": r.id,  
                     "sensor_name": r.sensor_name,
                     "metric": r.metric,
                     "operator": r.operator,
                     "sensor_target_value": r.sensor_target_value,
-                    "triggered_at": r.triggered_at,
-                    "last_trigger_value": r.last_trigger_value
+                    "triggered_at": state.triggered_rules_history[r.id]["triggered_at"],
+                    "last_trigger_value": state.triggered_rules_history[r.id]["last_trigger_value"]
                 })
     return jsonify(result)
     
