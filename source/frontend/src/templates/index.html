@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mars Base Operations Dashboard</title>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color-main: #020117; 
-            --bg-color-body: #110D2C; 
-            --panel-bg-default: #ffffff; 
-            --panel-bg-habitat: #2A56C6; 
-            --panel-bg-health: #35D01A; 
-            --panel-bg-bio: #1e1b4b; 
-            --panel-bg-infra: #27272a; 
+            --bg-color-main: #020117;
+            --bg-color-body: #110D2C;
+            --panel-bg-default: #ffffff;
+            --panel-bg-habitat: #2A56C6;
+            --panel-bg-health: #35D01A;
+            --panel-bg-bio: #1e1b4b;
+            --panel-bg-infra: #27272a;
             --text-main: #ffffff;
-            --text-panel-dark: #2A56C6; 
+            --text-panel-dark: #2A56C6;
             --text-muted: #94a3b8;
-            --accent: #2A56C6; 
+            --accent: #2A56C6;
             --ok-color: #35D01A;
-            --warn-color: #f33a1e; 
-            --infra-accent: #fbbf24; 
+            --warn-color: #f33a1e;
+            --infra-accent: #fbbf24;
             --bg-sidebar: #2A56C6;
         }
 
@@ -46,14 +48,64 @@
             padding: 20px 0;
             border-right: 1px solid #110D2C;
         }
-        .sidebar-icon { font-size: 1.5em; color: var(--text-main); cursor: pointer; }
-        .main-body { flex-grow: 1; background-color: var(--bg-color-body); display: flex; flex-direction: column; }
-        .navbar { height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-color-body); border-bottom: 1px solid #110D2C; }
-        .navbar-links { display: flex; gap: 20px; }
-        .navbar-link { color: #8C8B9E; text-decoration: none; font-size: 0.9em; display: flex; flex-direction: column; align-items: flex-start; }
-        .navbar-link.active { color: var(--text-main); }
-        .section-label { font-size: 0.6em; color: #110D2C; background-color: #ffffff; padding: 2px 5px; border-radius: 3px; margin-top: 2px; }
-        .navbar-title { display: flex; align-items: center; gap: 10px; font-size: 1.2em; font-weight: bold; }
+
+        .sidebar-icon {
+            font-size: 1.5em;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .main-body {
+            flex-grow: 1;
+            background-color: var(--bg-color-body);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color-body);
+            border-bottom: 1px solid #110D2C;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-link {
+            color: #8C8B9E;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .navbar-link.active {
+            color: var(--text-main);
+        }
+
+        .section-label {
+            font-size: 0.6em;
+            color: #110D2C;
+            background-color: #ffffff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+        }
+
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
         /* --- DASHBOARD LAYOUT NUOVO --- */
         .dashboard-content {
@@ -63,7 +115,28 @@
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
+
+            margin-right: 15px;
+            margin-bottom: 20px;
+            border-radius: 15px;
         }
+
+        .dashboard-content::-webkit-scrollbar {
+            padding: 10px;
+            width: 8px;
+        }
+
+        .dashboard-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.38);
+            border-radius: 10px;
+            margin: 5px;
+        }
+
+        .dashboard-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
 
         .dashboard-top-row {
             display: grid;
@@ -86,120 +159,270 @@
             color: #000000;
             transition: background-color 0.3s ease;
         }
-        
+
         .navbar-link {
-          position: relative; 
-          text-decoration: none;
-          padding: 10px 15px;
-          color: #ffffff; 
-          transition: color 0.3s ease;
+            position: relative;
+            text-decoration: none;
+            padding: 10px 15px;
+            color: #ffffff;
+            transition: color 0.3s ease;
         }
 
         /* La sottolineatura verde brillante */
         .navbar-link.active::after {
             content: "";
             position: absolute;
-            bottom: -5px; 
-            left: 15%;    
-            width: 70%;   
-            height: 3px;  
-            background-color: #00ff88; 
-            box-shadow: 0 0 10px #00ff88; 
+            bottom: -5px;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background-color: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
             border-radius: 2px;
         }
 
-        .panel-title { color: var(--text-panel-dark); font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .timestamp { font-size: 0.65em; color: var(--text-muted); margin-top: 4px; font-family: monospace; }
+        .panel-title {
+            color: var(--text-panel-dark);
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-       /* Pannelli generici - Layout a griglia */
-        .grid-2x2 { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 20px; 
-            flex-grow: 1; 
+        .timestamp {
+            font-size: 1em;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: monospace;
         }
-        .grid-5 { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 15px; 
-            flex-grow: 1; 
+
+        /* Pannelli generici - Layout a griglia */
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            flex-grow: 1;
         }
-        
-        .metric-card { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            text-align: center; 
-            background-color: rgba(0,0,0,0.15); 
-            padding: 15px; 
-            border-radius: 8px; 
-            height: 100%; 
-            box-sizing: border-box; 
-            gap: 24px;
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            flex-grow: 1;
         }
-        .metric-card-value { font-size: 1.8em; font-weight: bold; color: var(--ok-color); }
-        .metric-card-label { 
-            font-size: 0.85em; 
-            color: var(--text-main); 
-            margin-bottom: auto;
-            letter-spacing: 1px; 
+
+        .metric-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.15);
+            padding: 15px 20px;
+            border-radius: 8px;
+            height: 100%;
+            min-height: 120px;
+            box-sizing: border-box;
+            gap: 8px;
+        }
+
+        .metric-card-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--ok-color);
+            line-height: 1;
+            margin: 5px 0;
+        }
+
+        .metric-card-label {
+            font-size: 0.75em;
+            color: var(--text-main);
+            letter-spacing: 1px;
             order: -1;
+            margin-bottom: 0;
         }
+
+        .extra-metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            width: 100%;
+            gap: 10px;
+        }
+
+        .extra-metric-name {
+            font-size: 0.55em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            text-align: left;
+        }
+
+        .extra-metric-value {
+            font-size: 0.65em;
+            color: var(--text-main);
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .biologic-panel .extra-metric-value {
+            color: #2A56C6;
+        }
+
 
         /* Specifici Pannelli */
-        .env-metric-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e2e8f0; }
-        .env-metric-container:last-child { border-bottom: none; }
-        .env-label { font-size: 1.1em; font-weight: 600; color: var(--text-panel-dark); }
-        .env-data-group { text-align: right; }
-        .env-value { font-size: 1.5em; font-weight: bold; color: #110D2C; }
-
-        .health-panel { 
-            background-color: var(--panel-bg-health); 
-            color: #ffffff; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center; 
+        .env-metric-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
         }
-        .health-panel .panel-title { color: #ffffff; justify-content: center; font-size: 1.4em; margin-bottom: 5px; }
-        .health-panel .status-text { font-size: 2em; font-weight: bold; letter-spacing: 2px; }
-        .health-panel .timestamp { color: rgba(255,255,255,0.7); }
 
-        .habitat-panel { 
-            background-color: var(--panel-bg-habitat); 
-            color: #ffffff; 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
+        .env-metric-container:last-child {
+            border-bottom: none;
         }
-        .habitat-panel .panel-title { color: #ffffff; }
-        .habitat-panel .metric-card-value { color: #ffffff; font-size: 1.6em; }
-        .habitat-panel .metric-card-label { color: #ffffff; font-size: 1.3em; }
 
-        .biologic-panel { 
-            background-color: #ffffff; 
-            color: #2A56C6; 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
+        .env-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-panel-dark);
         }
-        .biologic-panel .panel-title { color: #2A56C6; }
-        .biologic-panel .metric-card-value { color: var(--panel-bg-habitat); font-size: 1.6em; }
-        .biologic-panel .metric-card-label { color: #2A56C6; font-size: 1.3em; }
 
-        .infrastructure-panel { background-color: #2BB2E9; color: #ffffff; width: 100%; box-sizing: border-box; }
-        .infrastructure-panel .panel-title { color: #ffffff; }
-        .infrastructure-panel .metric-card-value { color: #ffffff; font-size: 1.6em; }
-        .infrastructure-panel .metric-card-label { color: #ffffff; font-size: 1.3em; }
+        .env-data-group {
+            text-align: right;
+        }
+
+        .env-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #110D2C;
+        }
+
+        .health-panel {
+            background-color: var(--panel-bg-health);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .health-panel .panel-title {
+            color: #ffffff;
+            justify-content: center;
+            font-size: 1.4em;
+            margin-bottom: 5px;
+        }
+
+        .health-panel .status-text {
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .health-panel .timestamp {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .habitat-panel {
+            background-color: var(--panel-bg-habitat);
+            color: #ffffff;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .habitat-panel .panel-title {
+            color: #ffffff;
+        }
+
+        .habitat-panel .metric-card-value {
+            color: #ffffff;
+            font-size: 1.6em;
+        }
+
+        .habitat-panel .metric-card-label {
+            color: #ffffff;
+            font-size: 1.3em;
+        }
+
+        .biologic-panel {
+            background-color: #ffffff;
+            color: #2A56C6;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .biologic-panel .panel-title {
+            color: #2A56C6;
+        }
+
+        .biologic-panel .metric-card-value {
+            color: var(--panel-bg-habitat);
+            font-size: 1.6em;
+        }
+
+        .biologic-panel .metric-card-label {
+            color: #2A56C6;
+            font-size: 1.3em;
+        }
+
+        .infrastructure-panel {
+            background-color: #2BB2E9;
+            color: #ffffff;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .infrastructure-panel .panel-title {
+            color: #ffffff;
+        }
+
+        .infrastructure-panel .metric-card-value {
+            color: #ffffff;
+            font-size: 1.6em;
+        }
+
+        .infrastructure-panel .metric-card-label {
+            color: #ffffff;
+            font-size: 1.3em;
+        }
+
+        .infrastructure-panel .timestamp {
+            font-size: 1em;
+            color: #ffffff;
+            margin-top: 4px;
+            font-family: monospace;
+        }
 
         /* Animazione */
-        .update-flash { animation: flash 0.3s ease; }
-        @keyframes flash {
-            0% { opacity: 0.3; transform: scale(0.95); }
-            50% { color: var(--warn-color); }
-            100% { opacity: 1; transform: scale(1); }
+        .update-flash {
+            animation: flash 0.3s ease;
         }
+
+        @keyframes flash {
+            0% {
+                opacity: 0.3;
+                transform: scale(0.95);
+            }
+
+            50% {
+                color: var(--warn-color);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         #notification-container {
             position: fixed;
             top: 20px;
@@ -217,7 +440,7 @@
             border-radius: 12px;
             padding: 14px 16px;
             color: white;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
             animation: slideIn 0.25s ease;
             pointer-events: auto;
             position: relative;
@@ -282,6 +505,7 @@
                 opacity: 0;
                 transform: translateX(25px) scale(0.98);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0) scale(1);
@@ -289,14 +513,17 @@
         }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
-      <div class="sidebar-top">
-        <img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}" alt="Mission" style="width: 32px; height: 32px; padding: 10px;">
-    </div>
-    <div class="sidebar-bottom">
-        <img src="{{ url_for('static', filename='icons/settings_64px.png') }}" alt="Settings" style="width: 32px; height: 32px; padding: 10px;">
-      </div>
+        <div class="sidebar-top">
+            <img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}" alt="Mission"
+                style="width: 32px; height: 32px; padding: 10px;">
+        </div>
+        <div class="sidebar-bottom">
+            <img src="{{ url_for('static', filename='icons/settings_64px.png') }}" alt="Settings"
+                style="width: 32px; height: 32px; padding: 10px;">
+        </div>
     </div>
 
     <div class="main-body">
@@ -308,15 +535,16 @@
                 <a href="{{ url_for('history') }}" class="navbar-link">History</a>
             </div>
             <div class="navbar-title">
-                <img src="{{ url_for('static', filename='icons/rocket_48px.png') }}" alt="Rocket" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
+                <img src="{{ url_for('static', filename='icons/rocket_48px.png') }}" alt="Rocket"
+                    style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
                 <span>Mars Base Operations</span>
             </div>
         </div>
 
         <div class="dashboard-content" id="dashboard">
-            
+
             <div class="dashboard-top-row">
-                
+
                 <div class="dashboard-column">
                     <div class="panel enviroment-panel" id="panel-environment">
                         <div class="panel-title">Environment Monitor</div>
@@ -365,12 +593,13 @@
 
                 <div class="dashboard-column">
                     <div class="panel health-panel" id="panel-health">
-                      <div class="panel-title">
-                        <img src="{{ url_for('static', filename='icons/heart_100px.png') }}" alt="Health" style="width: 28px; height: 28px; margin-right: 8px;"> 
-                        Base Health
-                      </div>
-                      <div class="status-text" id="health-status-text">--</div>
-                      <div class="timestamp" id="health-time">Awaiting API...</div>
+                        <div class="panel-title">
+                            <img src="{{ url_for('static', filename='icons/heart_100px.png') }}" alt="Health"
+                                style="width: 28px; height: 28px; margin-right: 8px;">
+                            Base Health
+                        </div>
+                        <div class="status-text" id="health-status-text">--</div>
+                        <div class="timestamp" id="health-time">Awaiting API...</div>
                     </div>
 
                     <div class="panel biologic-panel" id="panel-biologic">
@@ -400,7 +629,7 @@
                     </div>
                 </div>
 
-            </div> 
+            </div>
             <div class="panel infrastructure-panel" id="panel-infrastructure">
                 <div class="panel-title">Infrastructure Monitor</div>
                 <div class="grid-5">
@@ -439,34 +668,6 @@
 
     <script>
         const socket = io();
-
-        // --- AGGIUNTO: Memoria delle card espanse e funzione di Toggle ---
-        const expandedCards = new Set();
-
-        window.toggleCard = function(sourceId) {
-            // Aggiunge o rimuove l'ID dalla memoria
-            if (expandedCards.has(sourceId)) {
-                expandedCards.delete(sourceId);
-            } else {
-                expandedCards.add(sourceId);
-            }
-            
-            // Applica l'effetto visivo istantaneamente
-            const safeId = sourceId.replace(/[^a-zA-Z0-9]/g, '-');
-            const extraDiv = document.getElementById('extra-' + safeId);
-            const chevron = document.getElementById('chev-' + safeId);
-            
-            if (extraDiv && chevron) {
-                if (expandedCards.has(sourceId)) {
-                    extraDiv.style.display = 'block';
-                    chevron.innerText = '▲';
-                } else {
-                    extraDiv.style.display = 'none';
-                    chevron.innerText = '▼';
-                }
-            }
-        };
-        // -----------------------------------------------------------------
 
         const notificationCooldown = new Map();
         const sensorLastStatus = new Map();
@@ -523,13 +724,13 @@
                     method: 'GET',
                     headers: { 'accept': 'application/json' }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
-                    const statusText = data.status || "UNKNOWN"; 
-                    
+                    const statusText = data.status || "UNKNOWN";
+
                     document.getElementById('health-status-text').innerText = statusText.toUpperCase();
-                    
+
                     const healthPanel = document.getElementById('panel-health');
                     if (statusText.toLowerCase() === 'ok') {
                         healthPanel.style.backgroundColor = 'var(--panel-bg-health)';
@@ -557,7 +758,7 @@
             if (el && el.innerHTML !== valueHTML) {
                 el.innerHTML = valueHTML;
                 el.classList.remove('update-flash');
-                void el.offsetWidth; 
+                void el.offsetWidth;
                 el.classList.add('update-flash');
             }
         }
@@ -565,23 +766,23 @@
         // 3. MAPPA CONFIGURAZIONE
         const sourceMap = {
             'greenhouse_temperature': { valId: 'temp-value', timeId: 'temp-time', metricTarget: 'temperature' },
-            'entrance_humidity':      { valId: 'hum-value', timeId: 'hum-time', metricTarget: 'humidity' },
-            'co2_hall':               { valId: 'co2-value', timeId: 'co2-time', metricTarget: 'co2' },
-            'corridor_pressure':      { valId: 'press-value', timeId: 'press-time', metricTarget: 'pressure' },
-            
-            'mars/telemetry/radiation':    { valId: 'rad-value', timeId: 'rad-time' }, 
-            'mars/telemetry/life_support': { valId: 'life-value', timeId: 'life-time', metricTarget: 'oxygen_pct' }, 
-            
-            'hydroponic_ph':    { valId: 'ph-value', timeId: 'ph-time', metricTarget: 'ph' },
-            'air_quality_voc':  { valId: 'voc-value', timeId: 'voc-time' },
+            'entrance_humidity': { valId: 'hum-value', timeId: 'hum-time', metricTarget: 'humidity' },
+            'co2_hall': { valId: 'co2-value', timeId: 'co2-time', metricTarget: 'co2' },
+            'corridor_pressure': { valId: 'press-value', timeId: 'press-time', metricTarget: 'pressure' },
+
+            'mars/telemetry/radiation': { valId: 'rad-value', timeId: 'rad-time' },
+            'mars/telemetry/life_support': { valId: 'life-value', timeId: 'life-time', metricTarget: 'oxygen_pct' },
+
+            'hydroponic_ph': { valId: 'ph-value', timeId: 'ph-time', metricTarget: 'ph' },
+            'air_quality_voc': { valId: 'voc-value', timeId: 'voc-time' },
             'air_quality_pm25': { valId: 'pm25-value', timeId: 'pm25-time', metricTarget: 'pm2.5' },
             'water_tank_level': { valId: 'water-value', timeId: 'water-time', metricTarget: 'level_pct' },
 
-            'mars/telemetry/solar_array':       { valId: 'solar-value', timeId: 'solar-time', metricTarget: 'power_kw' },
-            'mars/telemetry/power_bus':         { valId: 'bus-value', timeId: 'bus-time', metricTarget: 'power_kw' },
+            'mars/telemetry/solar_array': { valId: 'solar-value', timeId: 'solar-time', metricTarget: 'power_kw' },
+            'mars/telemetry/power_bus': { valId: 'bus-value', timeId: 'bus-time', metricTarget: 'power_kw' },
             'mars/telemetry/power_consumption': { valId: 'cons-value', timeId: 'cons-time', metricTarget: 'power_kw' },
-            'mars/telemetry/thermal_loop':      { valId: 'therm-value', timeId: 'therm-time', metricTarget: 'temperature_c' },
-            'mars/telemetry/airlock':           { valId: 'airlock-value', timeId: 'airlock-time', metricTarget: 'cycles_per_hour' }
+            'mars/telemetry/thermal_loop': { valId: 'therm-value', timeId: 'therm-time', metricTarget: 'temperature_c' },
+            'mars/telemetry/airlock': { valId: 'airlock-value', timeId: 'airlock-time', metricTarget: 'cycles_per_hour' }
         };
 
         // 4. LOGICA ELABORAZIONE DATI
@@ -605,16 +806,16 @@
                 });
             }
 
-            sensorLastStatus.set(sourceId, currentStatus);            
+            sensorLastStatus.set(sourceId, currentStatus);
 
             if (config && data.metrics && data.metrics.length > 0) {
-                const timeString = data.timestamp 
-                    ? new Date(data.timestamp).toLocaleTimeString() 
+                const timeString = data.timestamp
+                    ? new Date(data.timestamp).toLocaleTimeString()
                     : new Date().toLocaleTimeString();
 
                 // --- INIZIO NUOVA LOGICA DI RENDER ---
                 let stringaDisplay = '';
-                
+
                 if (data.metrics.length === 1) {
                     // Se c'è una sola metrica, comportati normalmente
                     const m = data.metrics[0];
@@ -622,9 +823,8 @@
                     stringaDisplay = m.unit ? `${valore} ${m.unit}` : valore;
                 } else {
                     // Se ci sono più metriche, abilita il menu a tendina
-                    const isExpanded = expandedCards.has(sourceId);
                     const safeId = sourceId.replace(/[^a-zA-Z0-9]/g, '-'); // Rende l'ID sicuro per l'HTML
-                    
+
                     // Prendi la prima metrica (Principale)
                     const first = data.metrics[0];
                     const firstVal = typeof first.value === 'number' ? first.value.toFixed(2) : first.value;
@@ -636,44 +836,40 @@
                         const m = data.metrics[i];
                         const val = typeof m.value === 'number' ? m.value.toFixed(2) : m.value;
                         const valStr = m.unit ? `${val} ${m.unit}` : val;
-                        
+
                         extraHtml += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.55em; gap: 15px;">
-                                <span style="opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; word-break: break-word;">${m.name}</span>
-                                <span style="color: var(--text-main); font-weight: bold; white-space: nowrap; text-align: right;">${valStr}</span>
-                            </div>`;
+                            <div class="extra-metric-row">
+                            <span class="extra-metric-name">${m.name}</span>
+                            <span class="extra-metric-value">${valStr}</span>
+                        </div>`;
                     }
 
-                    // Determina se deve essere visibile e che freccia mostrare
-                    const displayStyle = isExpanded ? 'block' : 'none';
-                    const chevron = isExpanded ? '▲' : '▼';
 
-                    // Assembla il tutto con un 'onclick'
                     stringaDisplay = `
-                        <div style="cursor: pointer; width: 100%;" onclick="toggleCard('${sourceId}')">
-                            <div style="display: flex; flex-direction: column; align-items: center;">
-                                <span style="font-size: 0.45em; opacity: 0.8; text-transform: uppercase; margin-bottom: 2px;">
-                                    ${first.name} <span id="chev-${safeId}" style="margin-left: 5px; font-size: 0.8em;">${chevron}</span>
+                       <div class="metric-container-static">
+                            <div class="main-metric-group" style="margin-bottom: 10px;">
+                                <span class="main-metric-name" style="font-size: 0.7em; opacity: 0.8; display: block;">
+                                    ${first.name}
                                 </span>
-                                <span>${firstStr}</span>
+                                <div class="main-metric-value" style="font-size: 1em; font-weight: bold;">
+                                    ${firstStr}
+                                </div>
                             </div>
-                            <div id="extra-${safeId}" style="display: ${displayStyle}; width: 100%;">
-                                ${extraHtml}
-                            </div>
+                            ${extraHtml ? `<div class="extra-metrics-list">${extraHtml}</div>` : ''}
                         </div>
                     `;
                 }
                 // --- FINE NUOVA LOGICA DI RENDER ---
 
                 updateDOMElement(config.valId, stringaDisplay);
-                
+
                 const timeEl = document.getElementById(config.timeId);
-                if(timeEl) timeEl.innerText = timeString;
+                if (timeEl) timeEl.innerText = timeString;
             }
         }
 
         // 5. CACHE INIZIALE
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             fetch('/api/latest-telemetry')
                 .then(response => {
                     if (!response.ok) throw new Error("API /api/latest-telemetry non ancora implementata o errore server.");
@@ -691,7 +887,7 @@
 
         // 6. WEBSOCKET E NOTIFICHE
         socket.on('telemetry_update', processTelemetryData);
-        
+
         socket.on('rule_triggered', (data) => {
             const key = `rule_popup_${data.rule_id}`;
 
@@ -726,8 +922,9 @@
                 sessionStorage.setItem('frontend_connected_popup_shown', 'true');
             }
         });
-        
+
         socket.on('disconnect', () => console.log('Disconnesso dal Server Flask.'));
     </script>
 </body>
+
 </html>

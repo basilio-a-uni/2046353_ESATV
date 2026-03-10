@@ -109,14 +109,32 @@
         .content-area {
             flex-grow: 1;
             background-color: var(--bg-content);
-            margin: 0 20px 20px 0;
+            /* Margini simmetrici per staccarla dalla sidebar e dal bordo destro */
+            margin: 0 30px 20px 30px;
             border-radius: 15px;
             padding: 30px;
             display: grid;
             grid-template-columns: 1.5fr 1fr;
             gap: 25px;
-            overflow: hidden;
+            /* Cambiamo overflow in auto per far apparire la tua scrollbar personalizzata */
+            overflow-y: auto;
             color: var(--text-dark);
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 20px;
+        }
+
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 10px 0;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background-color: #7b7e80;
+            border-radius: 10px;
+            border: 6px solid transparent;
+            background-clip: content-box;
         }
 
         /* --- SENSORS PANEL --- */
@@ -183,9 +201,19 @@
             padding-right: 10px;
         }
 
-        .scroll-list::-webkit-scrollbar { width: 8px; }
-        .scroll-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .scroll-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .scroll-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .scroll-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
 
         .group-label {
             padding: 15px 10px 5px 10px;
@@ -206,7 +234,12 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
-        .name-cell { font-weight: 600; color: var(--text-dark); word-break: break-all; padding-right: 10px; }
+        .name-cell {
+            font-weight: 600;
+            color: var(--text-dark);
+            word-break: break-all;
+            padding-right: 10px;
+        }
 
         .status-badge {
             padding: 4px 10px;
@@ -219,12 +252,25 @@
             text-transform: uppercase;
         }
 
-        .status-ok { background-color: var(--ok-color); }
-        .status-warn { background-color: var(--warn-color); }
-        .status-neutral { background-color: var(--neutral-color); }
+        .status-ok {
+            background-color: var(--ok-color);
+        }
+
+        .status-warn {
+            background-color: var(--warn-color);
+        }
+
+        .status-neutral {
+            background-color: var(--neutral-color);
+        }
 
         /* --- ACTUATORS COLUMN --- */
-        .right-column { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
 
         .actuators-card {
             background-color: var(--bg-sidebar);
@@ -242,15 +288,55 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .act-row:last-child { border-bottom: none; }
+        .act-row:last-child {
+            border-bottom: none;
+        }
 
         /* --- TOGGLE --- */
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked+.slider { background-color: var(--ok-color); }
-        input:checked+.slider:before { transform: translateX(22px); }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--ok-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
 
         .planet-box {
             background: #cbd5e1;
@@ -263,14 +349,22 @@
             border: 1px solid #b1bccd;
         }
 
-        .planet-img { width: 140px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+        .planet-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
+        }
     </style>
 </head>
 
 <body>
     <div class="sidebar">
-        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}" style="width: 32px; padding: 10px;"></div>
-        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}" style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
     </div>
 
     <div class="main-wrapper">
@@ -290,11 +384,13 @@
         <div class="content-area">
             <div class="panel">
                 <h2 class="panel-title">
-                    <img src="{{ url_for('static', filename='icons/search_64px.png') }}" style="width: 24px; filter: brightness(0) saturate(100%) invert(26%) sepia(87%) border-right(216deg) saturate(1915%) hue-rotate(211deg) brightness(91%) contrast(101%);">
+                    <img src="{{ url_for('static', filename='icons/search_64px.png') }}"
+                        style="width: 24px; filter: brightness(0) saturate(100%) invert(26%) sepia(87%) border-right(216deg) saturate(1915%) hue-rotate(211deg) brightness(91%) contrast(101%);">
                     Mission Sensors
                 </h2>
                 <div class="search-bar">
-                    <input type="text" id="sensorInput" onkeyup="searchSensors()" placeholder="Search active telemetry...">
+                    <input type="text" id="sensorInput" onkeyup="searchSensors()"
+                        placeholder="Search active telemetry...">
                 </div>
                 <div class="table-header">
                     <span>Source ID</span>
@@ -310,7 +406,8 @@
                         <span class="name-cell">{{ sensor.source_id }}</span>
                         <span style="color: #64748b; font-size: 0.9em;">{{ sensor.source_type | upper }}</span>
                         {% set s_lower = sensor.status | lower %}
-                        <div class="status-badge {{ 'status-ok' if s_lower == 'ok' else 'status-warn' if s_lower == 'warning' else 'status-neutral' }}">
+                        <div
+                            class="status-badge {{ 'status-ok' if s_lower == 'ok' else 'status-warn' if s_lower == 'warning' else 'status-neutral' }}">
                             {{ sensor.status }}
                         </div>
                         <span style="font-size: 0.85em; color: #475569; font-style: italic;">
@@ -325,7 +422,8 @@
                         <span class="name-cell">{{ sensor.source_id }}</span>
                         <span style="color: #64748b; font-size: 0.9em;">{{ sensor.source_type | upper }}</span>
                         {% set s_lower = sensor.status | lower %}
-                        <div class="status-badge {{ 'status-ok' if s_lower == 'ok' else 'status-warn' if s_lower == 'warning' else 'status-neutral' }}">
+                        <div
+                            class="status-badge {{ 'status-ok' if s_lower == 'ok' else 'status-warn' if s_lower == 'warning' else 'status-neutral' }}">
                             {{ sensor.status }}
                         </div>
                         <span style="font-size: 0.85em; color: #475569; font-style: italic;">
@@ -343,14 +441,17 @@
                     <div class="act-row">
                         <span>{{ actuator.actuator_id if actuator.actuator_id else actuator.name }}</span>
                         <label class="switch">
-                            <input type="checkbox" id="toggle-{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}" {% if actuator.state=='ON' %}checked{% endif %} onchange="toggleActuator('{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}', this.checked)">
+                            <input type="checkbox"
+                                id="toggle-{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}" {% if
+                                actuator.state=='ON' %}checked{% endif %}
+                                onchange="toggleActuator('{{ actuator.actuator_id if actuator.actuator_id else actuator.id }}', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     {% endfor %}
                 </div>
                 <div class="planet-box">
-                    <img src="{{ url_for('static', filename='icons/planet_96px.png') }}" class="planet-img">
+                    <img src="{{ url_for('static', filename='icons/planet_96px.jpg') }}" class="planet-img">
                 </div>
             </div>
         </div>

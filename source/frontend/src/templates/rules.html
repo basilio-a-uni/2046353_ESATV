@@ -60,59 +60,257 @@
             border-bottom: 1px solid #110D2C;
         }
 
-        .navbar-links { display: flex; gap: 20px; }
-        .navbar-link { position: relative; text-decoration: none; padding: 10px 15px; color: #8C8B9E; font-size: 0.9em; transition: color 0.3s ease; }
-        .navbar-link.active { color: #ffffff; }
-        .navbar-link.active::after { content: ""; position: absolute; bottom: -5px; left: 15%; width: 70%; height: 3px; background-color: #00ff88; box-shadow: 0 0 10px #00ff88; border-radius: 2px; }
-        .navbar-title { display: flex; align-items: center; gap: 10px; font-size: 1.2em; font-weight: bold; }
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-link {
+            position: relative;
+            text-decoration: none;
+            padding: 10px 15px;
+            color: #8C8B9E;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-link.active {
+            color: #ffffff;
+        }
+
+        .navbar-link.active::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background-color: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            border-radius: 2px;
+        }
+
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
         /* --- CONTENUTO PRINCIPALE --- */
         .content-area {
             flex-grow: 1;
             background-color: var(--bg-content);
+            /* margin: 0 20px 20px 0; <--- Modifica questa riga così: */
             margin: 0 20px 20px 0;
+
+            /* Aumenta il margine destro per staccare la scrollbar dal bordo finestra */
+            margin-right: 30px;
+            margin-left: 30px;
+
             border-radius: 15px;
             padding: 30px;
             overflow-y: auto;
             color: var(--text-dark);
         }
 
+        .content-area::-webkit-scrollbar {
+            width: 20px;
+            /* Leggermente più larga per gestire il padding interno */
+        }
+
+        /* 2. Il binario (track) */
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+            /* Sfondo trasparente per far vedere il colore della pagina */
+            margin: 10px 0;
+            /* Distanza dal bordo superiore e inferiore del pannello */
+        }
+
+        /* 3. La "maniglia" (thumb) */
+        .content-area::-webkit-scrollbar-thumb {
+            background-color: #86898c;
+            border-radius: 10px;
+
+            /* TRUCCO: Crea uno spazio vuoto attorno alla scrollbar stessa */
+            border: 6px solid transparent;
+            background-clip: content-box;
+        }
+
         /* --- TOP BAR --- */
-        .top-action-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-        .search-bar { flex-grow: 1; background-color: #ffffff; border-radius: 25px; display: flex; align-items: center; padding: 5px 20px; border: 1px solid #cbd5e1; }
-        .search-bar input { width: 100%; border: none; background: transparent; padding: 10px; font-size: 1em; outline: none; color: var(--text-dark); }
-        .btn-add-circle { width: 45px; height: 45px; border-radius: 50%; border: none; background-color: var(--bg-sidebar); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
-        .btn-add-circle:hover { transform: scale(1.1); }
+        .top-action-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            background-color: #ffffff;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            padding: 5px 20px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-bar input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 10px;
+            font-size: 1em;
+            outline: none;
+            color: var(--text-dark);
+        }
+
+        .btn-add-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--bg-sidebar);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .btn-add-circle:hover {
+            transform: scale(1.1);
+        }
 
         /* --- CARDS REGOLE --- */
-        .rules-list { display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px; }
-        .rule-card { background-color: white; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-        .rule-header { background-color: #f8fafc; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
-        .rule-title { font-size: 1.1em; font-weight: bold; margin: 0; color: var(--bg-sidebar); }
-        .rule-actions { display: flex; align-items: center; gap: 12px; }
-        .action-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; opacity: 0.7; transition: opacity 0.2s; }
-        .action-btn:hover { opacity: 1; }
-        .rule-body { padding: 20px; font-size: 1.1em; line-height: 1.6; }
-        .badge { background-color: #e2e8f0; padding: 4px 10px; border-radius: 6px; font-family: monospace; font-weight: bold; color: #334155; }
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .rule-card {
+            background-color: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .rule-header {
+            background-color: #f8fafc;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .rule-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 0;
+            color: var(--bg-sidebar);
+        }
+
+        .rule-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 1;
+        }
+
+        .rule-body {
+            padding: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .badge {
+            background-color: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #334155;
+        }
 
         /* --- TOGGLE SWITCH --- */
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked+.slider { background-color: var(--ok-color); }
-        input:checked+.slider:before { transform: translateX(22px); }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--ok-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
 
         /* --- MODAL (POP-UP) --- */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
+
         .modal-content {
             background-color: white;
             padding: 30px;
@@ -120,26 +318,87 @@
             width: 500px;
             max-width: 90%;
             color: var(--text-dark);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h2 { margin: 0; color: var(--bg-sidebar); }
-        .close-modal { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #64748b; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #64748b; font-weight: bold; font-size: 0.8em; text-transform: uppercase; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
-        .btn-submit { background-color: var(--bg-sidebar); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-        .empty-state { text-align: center; color: #94a3b8; padding: 60px; font-size: 1.1em; background: white; border-radius: 15px; border: 2px dashed #cbd5e1; }
+        .modal-header h2 {
+            margin: 0;
+            color: var(--bg-sidebar);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #64748b;
+            font-weight: bold;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            background-color: var(--bg-sidebar);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #94a3b8;
+            padding: 60px;
+            font-size: 1.1em;
+            background: white;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e1;
+        }
     </style>
 </head>
 
 <body>
     <div class="sidebar">
-        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}" style="width: 32px; padding: 10px;"></div>
-        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}" style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
     </div>
 
     <div class="main-wrapper">
@@ -159,11 +418,13 @@
         <div class="content-area">
             <div class="top-action-bar">
                 <div class="search-bar">
-                    <img src="{{ url_for('static', filename='icons/search_64px.png') }}" style="width: 20px; opacity: 0.5;">
+                    <img src="{{ url_for('static', filename='icons/search_64px.png') }}"
+                        style="width: 20px; opacity: 0.5;">
                     <input type="text" id="rule-search" placeholder="Search mission protocols (rules)...">
                 </div>
                 <button class="btn-add-circle" onclick="openModal()" title="Deploy New Protocol">
-                    <img src="{{ url_for('static', filename='icons/plus_64px.png') }}" style="width: 24px; filter: brightness(0) invert(1);">
+                    <img src="{{ url_for('static', filename='icons/plus_64px.png') }}"
+                        style="width: 24px; filter: brightness(0) invert(1);">
                 </button>
             </div>
 
@@ -171,26 +432,32 @@
                 {% for rule in existing_rules %}
                 <div class="rule-card" id="rule-{{ rule.id }}" data-json='{{ rule | tojson | safe }}'>
                     <div class="rule-header">
-                        <h3 class="rule-title">Rule #{{ rule.id }} : {{ rule.sensor_name | replace('_', ' ') | title }} Protocol</h3>
+                        <h3 class="rule-title">Rule #{{ rule.id }} : {{ rule.sensor_name | replace('_', ' ') | title }}
+                            Protocol</h3>
                         <div class="rule-actions">
                             <button class="action-btn" onclick="deleteRule('{{ rule.id }}')" title="Delete">
-                                <img src="{{ url_for('static', filename='icons/trash_52px.png') }}" style="width: 20px;">
+                                <img src="{{ url_for('static', filename='icons/trash_52px.png') }}"
+                                    style="width: 20px;">
                             </button>
                             <button class="action-btn" onclick='openModal("{{ rule.id }}")' title="Edit">
-                                <img src="{{ url_for('static', filename='icons/pencil_48px.png') }}" style="width: 20px;">
+                                <img src="{{ url_for('static', filename='icons/pencil_48px.png') }}"
+                                    style="width: 20px;">
                             </button>
                             <label class="switch">
-                                <input type="checkbox" {% if rule.enabled %}checked{% endif %} onchange="toggleRuleStatus('{{ rule.id }}', this.checked)">
+                                <input type="checkbox" {% if rule.enabled %}checked{% endif %}
+                                    onchange="toggleRuleStatus('{{ rule.id }}', this.checked)">
                                 <span class="slider"></span>
                             </label>
                         </div>
                     </div>
                     <div class="rule-body">
-                        IF <span class="badge">{{ rule.sensor_name }}</span> 
-                        <span style="font-weight: bold; color: var(--bg-sidebar);">{{ rule.operator }}</span> 
-                        <span class="badge">{{ rule.sensor_target_value }}</span> 
-                        THEN set <span class="badge">{{ rule.actuator_name }}</span> 
-                        to <strong style="color: {{ 'var(--ok-color)' if rule.actuator_set_value == 'ON' else 'var(--off-color)' }}">{{ rule.actuator_set_value }}</strong>
+                        IF <span class="badge">{{ rule.sensor_name }}</span>
+                        <span style="font-weight: bold; color: var(--bg-sidebar);">{{ rule.operator }}</span>
+                        <span class="badge">{{ rule.sensor_target_value }}</span>
+                        THEN set <span class="badge">{{ rule.actuator_name }}</span>
+                        to <strong
+                            style="color: {{ 'var(--ok-color)' if rule.actuator_set_value == 'ON' else 'var(--off-color)' }}">{{
+                            rule.actuator_set_value }}</strong>
                     </div>
                 </div>
                 {% else %}
@@ -240,10 +507,10 @@
                         <label>Operator</label>
                         <select name="operator" id="field-operator">
                             <option value=">">Greater than (>)</option>
-                            <option value="<">Less than (<)</option>
+                            <option value="<">Less than (<)< /option>
                             <option value="==">Equal to (==)</option>
                             <option value=">=">Greater or Equal (>=)</option>
-                            <option value="<=">Less or Equal (<=)</option>
+                            <option value="<=">Less or Equal (<=)< /option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -323,20 +590,20 @@
             const form = document.getElementById('rule-form');
             form.reset();
             document.getElementById('field-id').value = '';
-            
+
             if (ruleId) {
                 document.getElementById('modal-title').innerText = "Edit Protocol";
                 document.getElementById('btn-submit-text').innerText = "Update Protocol";
-                
+
                 const card = document.getElementById(`rule-${ruleId}`);
                 const data = JSON.parse(card.dataset.json);
-                
+
                 document.getElementById('field-id').value = data.id;
                 document.getElementById('field-sensor').value = data.sensor_name;
-                
+
                 // Aggiorna le metriche prima di selezionare quella corretta
                 updateMetricList();
-                
+
                 document.getElementById('field-metric').value = data.metric;
                 document.getElementById('field-operator').value = data.operator;
                 document.getElementById('field-value').value = data.sensor_target_value;
@@ -347,7 +614,7 @@
                 document.getElementById('btn-submit-text').innerText = "Deploy to Base";
                 updateMetricList(); // Disabilita correttamente il campo metrica
             }
-            
+
             document.getElementById('rule-modal').style.display = 'flex';
         }
 
@@ -360,8 +627,8 @@
             const formData = new FormData(this);
             const ruleData = Object.fromEntries(formData.entries());
 
-            const isUpdate = ruleData.id && ruleData.id.trim() !== ""; 
-            
+            const isUpdate = ruleData.id && ruleData.id.trim() !== "";
+
             if (isUpdate) {
                 const originalCard = document.getElementById(`rule-${ruleData.id}`);
                 if (originalCard) {
@@ -369,28 +636,28 @@
                     ruleData.enabled = originalData.enabled;
                 }
             } else {
-                delete ruleData.id; 
+                delete ruleData.id;
             }
-            
+
             const endpoint = isUpdate ? `${API_BASE_URL}/rules/update` : `${API_BASE_URL}/rules`;
-            
+
             fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(ruleData)
             })
-            .then(res => {
-                if (!res.ok) throw new Error(`Status: ${res.status}`);
-                return res.json();
-            })
-            .then(() => {
-                closeModal();
-                location.reload();
-            })
-            .catch(err => {
-                console.error('Errore:', err);
-                alert('Errore durante il salvataggio della regola nel Mainframe.');
-            });
+                .then(res => {
+                    if (!res.ok) throw new Error(`Status: ${res.status}`);
+                    return res.json();
+                })
+                .then(() => {
+                    closeModal();
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error('Errore:', err);
+                    alert('Errore durante il salvataggio della regola nel Mainframe.');
+                });
         });
 
         document.getElementById('rule-search').addEventListener('input', function (e) {
@@ -403,8 +670,8 @@
         function deleteRule(id) {
             if (confirm("Delete this mission protocol?")) {
                 fetch(`${API_BASE_URL}/rules/${id}`, { method: 'DELETE' })
-                .then(res => res.json())
-                .then(data => { if (data.status === "success") location.reload(); });
+                    .then(res => res.json())
+                    .then(data => { if (data.status === "success") location.reload(); });
             }
         }
 
@@ -417,4 +684,5 @@
         }
     </script>
 </body>
+
 </html>

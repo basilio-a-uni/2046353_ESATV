@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
             --bg-color-main: #020117;
             --bg-color-body: #110D2C;
             --bg-sidebar: #2A56C6;
-            --bg-content: #E2E8F0; 
+            --bg-content: #E2E8F0;
             --text-main: #ffffff;
             --text-dark: #1e293b;
             --accent: #2A56C6;
@@ -20,43 +21,124 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color-main);
             color: var(--text-main);
-            margin: 0; display: flex; height: 100vh; overflow: hidden;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* SIDEBAR (Identica a rules.html) */
         .sidebar {
-            width: 70px; background-color: var(--bg-sidebar);
-            display: flex; flex-direction: column; justify-content: space-between;
-            align-items: center; padding: 20px 0; border-right: 1px solid #110D2C;
+            width: 70px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-right: 1px solid #110D2C;
         }
 
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-color-body); }
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color-body);
+        }
 
         .navbar {
-            height: 60px; padding: 0 20px; display: flex; justify-content: space-between;
-            align-items: center; background-color: var(--bg-color-body); border-bottom: 1px solid #110D2C;
+            height: 60px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color-body);
+            border-bottom: 1px solid #110D2C;
         }
-        .navbar-links { display: flex; gap: 20px; }
-        .navbar-link { position: relative; text-decoration: none; padding: 10px 15px; color: #8C8B9E; font-size: 0.9em; transition: color 0.3s ease; }
-        .navbar-link.active { color: #ffffff; }
-        
+
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-link {
+            position: relative;
+            text-decoration: none;
+            padding: 10px 15px;
+            color: #8C8B9E;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-link.active {
+            color: #ffffff;
+        }
+
         /* Spostata la sottolineatura verde su History */
         .navbar-link.active::after {
-            content: ""; position: absolute; bottom: -5px; left: 15%; width: 70%; height: 3px;
-            background-color: #00ff88; box-shadow: 0 0 10px #00ff88; border-radius: 2px;
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background-color: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            border-radius: 2px;
         }
 
-        .navbar-title { display: flex; align-items: center; gap: 10px; font-size: 1.2em; font-weight: bold; }
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
         .content-area {
-            flex-grow: 1; background-color: var(--bg-content);
-            margin: 0 20px 20px 0; border-radius: 15px;
-            padding: 30px; overflow-y: auto; color: var(--text-dark);
+            flex-grow: 1;
+            background-color: var(--bg-content);
+
+            /* Margini per staccare il pannello dai bordi della finestra */
+            margin: 0 30px 20px 30px;
+
+            border-radius: 15px;
+            padding: 30px;
+            overflow-y: auto;
+            color: var(--text-dark);
         }
 
-        h2 { border-left: 4px solid var(--danger); padding-left: 15px; margin-bottom: 30px; text-transform: uppercase; color: var(--bg-sidebar); font-size: 1.2em; }
+        .content-area::-webkit-scrollbar {
+            width: 20px;
+        }
 
-        .history-list { display: flex; flex-direction: column; gap: 15px; }
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 10px 0;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background-color: #86898c;
+            border-radius: 10px;
+            /* Il trucco del bordo trasparente per centrare la maniglia */
+            border: 6px solid transparent;
+            background-clip: content-box;
+        }
+
+        h2 {
+            border-left: 4px solid var(--danger);
+            padding-left: 15px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            color: var(--bg-sidebar);
+            font-size: 1.2em;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
         .history-card {
             background-color: white;
@@ -67,19 +149,39 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .badge { background-color: #e2e8f0; color: #334155; padding: 4px 10px; border-radius: 6px; font-family: monospace; font-weight: bold; }
-        .highlight-value { color: var(--danger); font-weight: bold; font-family: monospace; }
+        .badge {
+            background-color: #e2e8f0;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .highlight-value {
+            color: var(--danger);
+            font-weight: bold;
+            font-family: monospace;
+        }
 
         .empty-state {
-            text-align: center; color: #94a3b8; padding: 60px; font-size: 1.1em;
-            background: white; border-radius: 15px; border: 2px dashed #cbd5e1;
+            text-align: center;
+            color: #94a3b8;
+            padding: 60px;
+            font-size: 1.1em;
+            background: white;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e1;
         }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
-        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}" style="width: 32px; padding: 10px;"></div>
-        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}" style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-top"><img src="{{ url_for('static', filename='icons/rocket_take_off_128px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
+        <div class="sidebar-bottom"><img src="{{ url_for('static', filename='icons/settings_64px.png') }}"
+                style="width: 32px; padding: 10px;"></div>
     </div>
 
     <div class="main-wrapper">
@@ -107,7 +209,7 @@
     <script>
         function formatTime(ts) {
             const d = new Date(ts * 1000);
-            return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         function fetchHistory() {
@@ -141,7 +243,7 @@
                     `).join('');
                 })
                 .catch(err => {
-                    document.getElementById('history-container').innerHTML = 
+                    document.getElementById('history-container').innerHTML =
                         '<div class="empty-state" style="color: var(--danger);">ERROR: Connection to Mainframe Lost.</div>';
                 });
         }
@@ -150,4 +252,5 @@
         setInterval(fetchHistory, 5000);
     </script>
 </body>
+
 </html>
