@@ -23,7 +23,7 @@ def init_db():
     if cur.fetchone()[0] == 0:
         cur.execute("""
             INSERT INTO rules (sensor_name, metric, operator, sensor_target_value, actuator_name, actuator_set_value, enabled) 
-            VALUES('greenhouse_temperature', 'temperature_c', '>', 0, 'cooling_fan', 'ON', 1)
+            VALUES('greenhouse_temperature', 'temperature_c', '>', 28, 'cooling_fan', 'ON', 1)
         """)
 
     conn.commit()
