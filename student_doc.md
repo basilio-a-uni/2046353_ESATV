@@ -47,10 +47,9 @@ The Ingestion Service container does not require data persistence as it works as
 ### EXTERNAL SERVICES CONNECTIONS
 The Ingestion Service container connects to:
 - The simulator container at simulator:8080 trough REST API and Websocket API
-- The RabbitMQ container to broadcast data
+- The RabbitMQ container to broadcast data via the pika library
 
 ### MICROSERVICES:
-
 #### MICROSERVICE: Ingestion Service
 - TYPE: backend
 - DESCRIPTION: The ingestion service receives data from the REST sensors and the telemetry stream, to unify and centralize them.
@@ -88,17 +87,17 @@ The service is realized with:
 
 ## CONTAINER_NAME: Processing Engine
 ### DESCRIPTION:
-The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes from the actuators.
+The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes to the actuators.
 
 ### USER STORIES:
 1 As the Administrator I want to see current rules
 2 As the Administrator I want to see the list of available actuators    
 6 As the Administrator I want to add a rule
 7 As the Administrator I want to remove a rule
-8 As the Administrator I want to temporarily enable or disable a rule
+8 As the Administrator I want to modify a rule 
+9 As the Administrator I want to temporarily enable or disable a rule
 11 As the Administrator I want my changes to be persistent
 14 As the Administrator I want to switch an actuator on or off manually
-15 As the Administrator I want to see the history of triggered rules
 18 As the Administrator I want to see the current status of all actuators
 20 As the Administrator I want to be notified of the trigger of a rule
 
@@ -116,7 +115,7 @@ The Processing Engine container connects to:
 ### MICROSERVICES:
 #### MICROSERVICE: Processing Engine
 - TYPE: backend
-- DESCRIPTION: The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes from the actuators.
+- DESCRIPTION: The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes to the actuators.
 - PORTS: 8001
 - TECHNOLOGICAL SPECIFICATION:
 The microservices utilizes the Python programming language, specifically targeting python 3.12.
@@ -132,8 +131,21 @@ The service is realized with:
 	- a thread that acts as a backend for the Presentation container 
 - ENDPOINTS:
 
+| HTTP METHOD | URL                             | Description                        | User Stories |
+| ----------- | ------------------------------- | ---------------------------------- | ------------ |
+| GET         | /rules                          | Get a list of rules                | 1            |
+| POST        | /rules                          | Add a rule                         | 6            |
+| DELETE      | /rules/<int:rule_id>            | Delete a rule                      | 7            |
+| POST        | /rules/update                   | Update a rule                      | 8            |
+| POST        | /rules/<int:rule_id>/toggle     | Toggle on or off a rule            | 9            |
+| GET         | /history                        | Get the history of triggered rules |              |
+| GET         | /sensors                        | Get last data about the sensors    |              |
+| GET         | /actuators                      | Get last data about the actuators  | 2, 18        |
+| POST        | /actuators/<actuator_id>/toggle | Toggle on or off an actuator       | 14           |
+| GET         | /telemetry/latest               | Get all the data about the sensors | 20           |
+
 - DB STRUCTURE:
-***Client*** 
+***Rules***: | ***id*** | sensor_name | metric | operator | sensor_target_value | actuator_name | actuator_set_value | enabled
 
 
 ## CONTAINER_NAME: Presentation
@@ -142,9 +154,10 @@ The Presentation container acts as a frontend API gateway for the browser to vis
 
 ### USER STORIES:
 4 As the Administrator I want to visualize the trends of the latest sensors values
- As the Administrator I want to know the status of the operative system
+5 As the Administrator I want to know the status of the operative system
 10 As the Administrator I want to filter rules by name, sensor or actuator of the rule
 13 As the Administrator I want to monitor the status of the habitat through the dashboard
+15 As the Administrator I want to see the history of triggered rules
 17 As the Administrator I want to see detailed information about a sensor
 19 As the Administrator I want to navigate between interfaces intuitively
 
@@ -172,12 +185,12 @@ The service is build using the following key packages:
 - SERVICE ARCHITECTURE:
 The service is realized with:
 	- a thread that receives data from the ingestion service via the RabbitMQ container
-	- a thread that serves the html templates to the browser
+	- a thread that serves the html templates to the browser with other infos 
 - PAGES:
 
 | Name                  | Description                     | Related Microservice | User Stories |
 | --------------------- | ------------------------------- | -------------------- | ------------ |
-| index.html            | Main dashboard                  | RabbitMQ             | TODO         |
-| rules.html            | Rules management                | Processing Engine    |              |
-| sensor_actuators.html | Sensor and actuators management | Processing Engine    |              |
-| history.html          | Rules history                   | Processing Engine    |              |
+| index.html            | Main dashboard                  | RabbitMQ             | 4, 5, 13     |
+| rules.html            | Rules management                | Processing Engine    | 10           |
+| sensor_actuators.html | Sensor and actuators management | Processing Engine    | 17           |
+| history.html          | Rules history                   | Processing Engine    | 15           |
