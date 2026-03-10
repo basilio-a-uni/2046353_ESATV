@@ -34,9 +34,9 @@ Mars Base Operations is a centralized monitoring and control platform for Martia
 The ingestion service receives data from the REST sensors and the telemetry stream, to unify and centralize them.
 
 ### USER STORIES:
-1. As the Administrator I want to see the list of available sensors
-2. As the Administrator I want to be notified of the warning status of a sensor
-3. As the Administrator I want to filter sensors by name, type or status
+3 As the Administrator I want to see the list of available sensors
+12 As the Administrator I want to be notified of the warning status of a sensor
+16 As the Administrator I want to filter sensors by name, type or status
 
 ### PORTS:
 No ports open
@@ -60,7 +60,7 @@ The microservices utilizes the Python programming language, specifically targeti
 The service is build using the following key packages:
 	asyncio -> to be able to poll all sensor at the same time on the same thread instead of using the more heavy approach of multithreading
 	websockets -> to be able to retrieve data via Websocket API
-	aihttp -> to be able to retrieve data via REST API asynchronously
+	aiohttp -> to be able to retrieve data via REST API asynchronously
 	pika -> to be able to connect to the RabbitMQ container
 - SERVICE ARCHITECTURE:
 The service is realized with:
@@ -74,7 +74,7 @@ The service is realized with:
 {
 	"source_id": "sensor/telemetry name",
 	"source_type": "telemetry"/"rest",
-	"timestamp": timestamp,
+	"timestamp": "timestamp",
 	"status": "ok"/"warning",
 	"metrics": [
 		{
@@ -88,30 +88,65 @@ The service is realized with:
 
 ## CONTAINER_NAME: Processing Engine
 ### DESCRIPTION:
+The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes from the actuators.
 
 ### USER STORIES:
-1. As the Administrator I want to see current rules
-2. As the Administrator I want to see the list of available actuators    
-3. As the Administrator I want to add a rule
-4. As the Administrator I want to remove a rule
-5. As the Administrator I want to temporarily enable or disable a rule
-6. As the Administrator I want my changes to be persistent
-7. As the Administrator I want to switch an actuator on or off manually
-8. As the Administrator I want to see the history of triggered rules
-9. As the Administrator I want to see the current status of all actuators
-10. As the Administrator I want to be notified of the trigger of a rule
+1 As the Administrator I want to see current rules
+2 As the Administrator I want to see the list of available actuators    
+6 As the Administrator I want to add a rule
+7 As the Administrator I want to remove a rule
+8 As the Administrator I want to temporarily enable or disable a rule
+11 As the Administrator I want my changes to be persistent
+14 As the Administrator I want to switch an actuator on or off manually
+15 As the Administrator I want to see the history of triggered rules
+18 As the Administrator I want to see the current status of all actuators
+20 As the Administrator I want to be notified of the trigger of a rule
+
+### PORTS
+8001:8001
+
+### PERSISTANCE EVALUATION
+The Processing Engine container does need persistance data to store the rules.
+We'll use SQLite since it's embedded and don't need an external container to work
+
+### EXTERNAL SERVICES CONNECTIONS
+The Processing Engine container connects to:
+- RabbitMQ container to receive data from the ingestion service
+
+### MICROSERVICES:
+#### MICROSERVICE: Processing Engine
+- TYPE: backend
+- DESCRIPTION: The processing engine receives data from the ingestion engine and process it to see if any sensor break any rules and applies the changes from the actuators.
+- PORTS: 8001
+- TECHNOLOGICAL SPECIFICATION:
+The microservices utilizes the Python programming language, specifically targeting python 3.12.
+The service is build using the following key packages:
+	pika -> to be able to connect to the RabbitMQ container
+	flask -> to be able to send data to the Presentation container
+	threading -> to be able to run both the flask app and the RabbitMQ receiver
+	sqlite3 -> to manage persistency for rules
+- SERVICE ARCHITECTURE:
+The service is realized with:
+	- two classes State and Rule that acts as a cache
+	- a thread that receive the data from the ingestion engine and analyze it with current rules
+	- a thread that acts as a backend for the Presentation container 
+- ENDPOINTS:
+
+- DB STRUCTURE:
+***Client*** 
+
 
 ## CONTAINER_NAME: Presentation
 ### DESCRIPTION:
 The Presentation container acts as a frontend API gateway for the browser to visualize the received data.
 
 ### USER STORIES:
-1. As the Administrator I want to visualize the trends of the latest sensors values
-2. As the Administrator I want to know the status of the operative system
-3. As the Administrator I want to filter rules by name, sensor or actuator of the rule
-4. As the Administrator I want to monitor the status of the habitat through the dashboard
-5. As the Administrator I want to see detailed information about a sensor
-6. As the Administrator I want to navigate between interfaces intuitively
+4 As the Administrator I want to visualize the trends of the latest sensors values
+ As the Administrator I want to know the status of the operative system
+10 As the Administrator I want to filter rules by name, sensor or actuator of the rule
+13 As the Administrator I want to monitor the status of the habitat through the dashboard
+17 As the Administrator I want to see detailed information about a sensor
+19 As the Administrator I want to navigate between interfaces intuitively
 
 ### PORTS
 8000:8000
