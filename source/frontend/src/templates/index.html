@@ -635,162 +635,286 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
     <script>
-    const sourceMap = {
-        'greenhouse_temperature': { valId: 'temp-value', timeId: 'temp-time' },
-        'entrance_humidity': { valId: 'hum-value', timeId: 'hum-time' },
-        'co2_hall': { valId: 'co2-value', timeId: 'co2-time' },
-        'corridor_pressure': { valId: 'press-value', timeId: 'press-time' },
-        'mars/telemetry/radiation': { valId: 'rad-value', timeId: 'rad-time' },
-        'mars/telemetry/life_support': { valId: 'life-value', timeId: 'life-time' },
-        'hydroponic_ph': { valId: 'ph-value', timeId: 'ph-time' },
-        'air_quality_voc': { valId: 'voc-value', timeId: 'voc-time' },
-        'air_quality_pm25': { valId: 'pm25-value', timeId: 'pm25-time' },
-        'water_tank_level': { valId: 'water-value', timeId: 'water-time' },
-        'mars/telemetry/solar_array': { valId: 'solar-value', timeId: 'solar-time' },
-        'mars/telemetry/power_bus': { valId: 'bus-value', timeId: 'bus-time' },
-        'mars/telemetry/power_consumption': { valId: 'cons-value', timeId: 'cons-time' },
-        'mars/telemetry/thermal_loop': { valId: 'therm-value', timeId: 'therm-time' },
-        'mars/telemetry/airlock': { valId: 'airlock-value', timeId: 'airlock-time' }
-    };
-
-    const chartDataStore = JSON.parse(sessionStorage.getItem('mars_chart_data')) || {};
-    let activeChartSource = sessionStorage.getItem('mars_active_source') || null;
-    let telemetryChart = null;
-
-    function saveChartData() {
-        sessionStorage.setItem('mars_chart_data', JSON.stringify(chartDataStore));
-        if (activeChartSource) sessionStorage.setItem('mars_active_source', activeChartSource);
-    }
-
-    function updateDOMElement(id, valueHTML) {
-        const el = document.getElementById(id);
-        if (el && el.innerHTML !== valueHTML) {
-            el.innerHTML = valueHTML;
-            el.classList.remove('update-flash');
-            void el.offsetWidth; 
-            el.classList.add('update-flash');
-        }
-    }
-
-    function initChart() {
-        const ctx = document.getElementById('mainTelemetryChart').getContext('2d');
-        telemetryChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                datasets: [{
-                    label: activeChartSource ? activeChartSource.split('/').pop().toUpperCase() : 'Seleziona metrica',
-                    data: (activeChartSource && chartDataStore[activeChartSource]) ? chartDataStore[activeChartSource].values : [],
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.15)',
-                    fill: true, tension: 0.4, borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                animation: { duration: 0 },
-                scales: { y: { grid: { color: '#2d2d2d' }, ticks: { color: '#555555' } }, x: { display: false } }
-            }
-        });
-
-        Object.keys(chartDataStore).forEach(sourceId => createChartButton(sourceId));
-    }
-
-    function createChartButton(sourceId) {
-        const container = document.getElementById('chart-buttons-list');
-        if (!container || document.querySelector(`.chart-btn[data-source="${sourceId}"]`)) return;
-
-        const btn = document.createElement('button');
-        btn.className = 'chart-btn' + (sourceId === activeChartSource ? ' active' : '');
-        btn.dataset.source = sourceId;
-        btn.innerText = sourceId.split('/').pop().replace(/_/g, ' ').toUpperCase();
-        btn.onclick = () => {
-            activeChartSource = sourceId;
-            saveChartData();
-            document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            updateChartVisuals();
+        const sourceMap = {
+            'greenhouse_temperature': { valId: 'temp-value', timeId: 'temp-time' },
+            'entrance_humidity': { valId: 'hum-value', timeId: 'hum-time' },
+            'co2_hall': { valId: 'co2-value', timeId: 'co2-time' },
+            'corridor_pressure': { valId: 'press-value', timeId: 'press-time' },
+            'mars/telemetry/radiation': { valId: 'rad-value', timeId: 'rad-time' },
+            'mars/telemetry/life_support': { valId: 'life-value', timeId: 'life-time' },
+            'hydroponic_ph': { valId: 'ph-value', timeId: 'ph-time' },
+            'air_quality_voc': { valId: 'voc-value', timeId: 'voc-time' },
+            'air_quality_pm25': { valId: 'pm25-value', timeId: 'pm25-time' },
+            'water_tank_level': { valId: 'water-value', timeId: 'water-time' },
+            'mars/telemetry/solar_array': { valId: 'solar-value', timeId: 'solar-time' },
+            'mars/telemetry/power_bus': { valId: 'bus-value', timeId: 'bus-time' },
+            'mars/telemetry/power_consumption': { valId: 'cons-value', timeId: 'cons-time' },
+            'mars/telemetry/thermal_loop': { valId: 'therm-value', timeId: 'therm-time' },
+            'mars/telemetry/airlock': { valId: 'airlock-value', timeId: 'airlock-time' }
         };
-        container.appendChild(btn);
-    }
 
-    function updateChartVisuals() {
-        if (!activeChartSource || !chartDataStore[activeChartSource] || !telemetryChart) return;
-        telemetryChart.data.datasets[0].data = chartDataStore[activeChartSource].values;
-        telemetryChart.data.datasets[0].label = activeChartSource.split('/').pop().toUpperCase();
-        telemetryChart.update('none');
-    }
+        // 1. CHIAMATA REST PER L'HEALTH STATUS
+        async function fetchHealthStatus() {
+            try {
+                const response = await fetch('http://localhost:8080/health', {
+                    method: 'GET',
+                    headers: { 'accept': 'application/json' }
+                });
 
-    function processTelemetryData(data) {
-        if (typeof notificationOnWarningStatus === "function") notificationOnWarningStatus(data);
-        
-        const sourceId = data.source_id;
-        const config = sourceMap[sourceId];
+                if (response.ok) {
+                    const data = await response.json();
+                    const statusText = data.status || "UNKNOWN";
 
-        if (config && data.metrics && data.metrics.length > 0) {
-            const timeString = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
-            let stringaDisplay = '';
+                    document.getElementById('health-status-text').innerText = statusText.toUpperCase();
 
-            if (data.metrics.length === 1) {
-                const m = data.metrics[0];
-                const valore = typeof m.value === 'number' ? m.value.toFixed(2) : m.value;
-                stringaDisplay = m.unit ? `${valore} ${m.unit}` : valore;
-            } else {
-                const first = data.metrics[0];
-                const firstVal = typeof first.value === 'number' ? first.value.toFixed(2) : first.value;
-                let extraHtml = '';
-                for (let i = 1; i < data.metrics.length; i++) {
-                    const m = data.metrics[i];
-                    const val = typeof m.value === 'number' ? m.value.toFixed(2) : m.value;
-                    extraHtml += `<div class="extra-metric-row"><span class="extra-metric-name">${m.name}</span><span class="extra-metric-value">${val} ${m.unit || ''}</span></div>`;
+                    const healthPanel = document.getElementById('panel-health');
+                    if (statusText.toLowerCase() === 'ok') {
+                        healthPanel.style.backgroundColor = 'var(--panel-bg-health)';
+                    } else {
+                        healthPanel.style.backgroundColor = 'var(--warn-color)';
+                    }
+
+                    document.getElementById('health-time').innerText = "Last check: " + new Date().toLocaleTimeString();
+                } else {
+                    console.error("Errore HTTP fetch health:", response.status);
                 }
-                stringaDisplay = `<div class="metric-container-static"><div class="main-metric-group" style="margin-bottom: 10px;"><span class="main-metric-name" style="font-size: 0.7em; opacity: 0.8; display: block;">${first.name}</span><div class="main-metric-value" style="font-size: 1.2em; font-weight: bold;">${firstVal} ${first.unit || ''}</div></div>${extraHtml}</div>`;
+            } catch (error) {
+                console.error("Errore di connessione a /health:", error);
+                document.getElementById('health-status-text').innerText = "ERROR";
+                document.getElementById('panel-health').style.backgroundColor = 'var(--warn-color)';
             }
-
-            updateDOMElement(config.valId, stringaDisplay);
-            const timeEl = document.getElementById(config.timeId);
-            if (timeEl) timeEl.innerText = timeString;
         }
 
-        const mainMetric = data.metrics && data.metrics[0];
-        if (mainMetric && typeof mainMetric.value === 'number') {
-            if (!chartDataStore[sourceId]) {
-                chartDataStore[sourceId] = { values: [] };
+        fetchHealthStatus();
+        setInterval(fetchHealthStatus, 5000);
+
+        const chartDataStore = JSON.parse(sessionStorage.getItem('mars_chart_data')) || {};
+        let activeChartSource = sessionStorage.getItem('mars_active_source') || null;
+        let telemetryChart = null;
+
+        function saveChartData() {
+            sessionStorage.setItem('mars_chart_data', JSON.stringify(chartDataStore));
+            if (activeChartSource) sessionStorage.setItem('mars_active_source', activeChartSource);
+        }
+
+        function updateDOMElement(id, valueHTML) {
+            const el = document.getElementById(id);
+            if (el && el.innerHTML !== valueHTML) {
+                el.innerHTML = valueHTML;
+                el.classList.remove('update-flash');
+                void el.offsetWidth;
+                el.classList.add('update-flash');
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('mainTelemetryChart').getContext('2d');
+            telemetryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: '#2d2d2d' },
+                            ticks: { color: '#2d2d2d' },
+                            title: { display: true, text: 'Scala Principale (continua)', color: '#2d2d2d' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: false, // Nascosto di default
+                            position: 'right',
+                            grid: { drawOnChartArea: false }, // Evita confusione con le linee della griglia
+                            ticks: { color: '##2d2d2d' },
+                            title: { display: true, text: 'Scala Secondaria (tratteggiata)', color: '##2d2d2d' }
+                        },
+                        x: { display: false }
+                    },
+                    plugins: {
+                        legend: { display: true, labels: { color: '#ffffff' } }
+                    }
+                }
+            });
+
+            Object.keys(chartDataStore).forEach(sourceId => {
                 createChartButton(sourceId);
-            }
-            chartDataStore[sourceId].values.push(mainMetric.value);
-            if (chartDataStore[sourceId].values.length > 10) chartDataStore[sourceId].values.shift();
-            
-            saveChartData();
-
-            if (!activeChartSource) {
-                activeChartSource = sourceId;
-                const btn = document.querySelector(`.chart-btn[data-source="${sourceId}"]`);
-                if (btn) btn.classList.add('active');
-            }
-            if (activeChartSource === sourceId) updateChartVisuals();
+            });
         }
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        initChart();
-        
-        const socket = io();
-        socket.on('connect', () => {
-            if (typeof notificationOnConnection === "function") notificationOnConnection();
-        });
-        socket.on('rule_triggered', (data) => {
-            if (typeof notificationOnRuleTriggered === "function") notificationOnRuleTriggered(data);
-        });
-        socket.on('telemetry_update', processTelemetryData);
+        function createChartButton(sourceId) {
+            const container = document.getElementById('chart-buttons-list');
+            // Se il container non esiste o il bottone c'è già, esci
+            if (!container || document.querySelector(`.chart-btn[data-source="${sourceId}"]`)) return;
 
-        fetch('/api/latest-telemetry')
-            .then(res => res.json())
-            .then(cache => {
-                for (const id in cache) processTelemetryData(cache[id]);
-            })
-            .catch(err => console.error("Errore cache:", err));
-    });
+            const btn = document.createElement('button');
+            btn.className = 'chart-btn' + (sourceId === activeChartSource ? ' active' : '');
+            btn.dataset.source = sourceId;
+
+            // Formattazione etichetta: prende l'ultima parte dell'ID e pulisce underscore
+            const label = sourceId.split('/').pop().replace(/_/g, ' ').toUpperCase();
+            btn.innerText = label;
+
+            btn.onclick = () => {
+                activeChartSource = sourceId;
+                saveChartData();
+                document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateChartVisuals();
+            };
+            container.appendChild(btn);
+        }
+
+        function updateChartVisuals() {
+            if (!activeChartSource || !chartDataStore[activeChartSource]) return;
+
+            const metricsSeries = chartDataStore[activeChartSource];
+            const colorPalette = ['#2ecc71', '#3498db', '#fb9324', '#e74c3c', '#9b59b6', '#00cfd5'];
+
+            // 1. Troviamo il valore massimo assoluto tra TUTTE le serie
+            let globalMax = 0;
+            metricsSeries.forEach(series => {
+                const m = Math.max(...series.values, 0);
+                if (m > globalMax) globalMax = m;
+            });
+            if (globalMax <= 0) globalMax = 1;
+
+            let useSecondaryAxis = false;
+
+            // 2. Definiamo la soglia (es. 15%). 
+            // Se una metrica è < 15% del massimo globale, va sulla scala di destra.
+            const disparityThreshold = 0.15;
+
+            telemetryChart.data.datasets = metricsSeries.map((series, i) => {
+                const color = colorPalette[i % colorPalette.length];
+                const currentMax = Math.max(...series.values, 0);
+
+                // NOVITÀ: Anche la prima metrica (i=0) ora può essere un "outlier"
+                // se è molto più piccola del massimo globale trovato nelle altre serie.
+                const isOutlier = currentMax < (globalMax * disparityThreshold);
+
+                if (isOutlier) useSecondaryAxis = true;
+
+                return {
+                    label: series.label.toUpperCase(),
+                    data: series.values,
+                    borderColor: color,
+                    backgroundColor: color + '10',
+                    // Assegnazione asse
+                    yAxisID: isOutlier ? 'y1' : 'y',
+                    // Stile visivo per distinguere gli assi
+                    borderDash: isOutlier ? [5, 5] : [],
+                    borderWidth: isOutlier ? 2 : 3,
+                    pointStyle: isOutlier ? 'rectRot' : 'circle',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3
+                };
+            });
+
+            // 3. Gestione visibilità asse secondario
+            telemetryChart.options.scales.y1.display = useSecondaryAxis;
+
+            // 4. Se tutte le metriche sono finite su Y1 (per assurdo), 
+            // Chart.js potrebbe mostrare un grafico vuoto a sinistra. 
+            // Forziamo la visualizzazione coerente:
+            telemetryChart.update();
+        }
+
+        function processTelemetryData(data) {
+            if (typeof notificationOnWarningStatus === "function") notificationOnWarningStatus(data);
+
+            const sourceId = data.source_id;
+            const config = sourceMap[sourceId];
+
+            // --- PARTE 1 & 2: AGGIORNAMENTO UI (Card) ---
+            if (config && data.metrics && data.metrics.length > 0) {
+                const timeString = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+                let stringaDisplay = '';
+
+                if (data.metrics.length === 1) {
+                    const m = data.metrics[0];
+                    const valore = typeof m.value === 'number' ? m.value.toFixed(2) : m.value;
+                    stringaDisplay = m.unit ? `${valore} ${m.unit}` : valore;
+                } else {
+                    const first = data.metrics[0];
+                    const firstVal = typeof first.value === 'number' ? first.value.toFixed(2) : first.value;
+                    let extraHtml = '';
+                    for (let i = 1; i < data.metrics.length; i++) {
+                        const m = data.metrics[i];
+                        const val = typeof m.value === 'number' ? m.value.toFixed(2) : m.value;
+                        extraHtml += `<div class="extra-metric-row"><span class="extra-metric-name">${m.name}</span><span class="extra-metric-value">${val} ${m.unit || ''}</span></div>`;
+                    }
+                    stringaDisplay = `<div class="metric-container-static"><div class="main-metric-group" style="margin-bottom: 10px;"><span class="main-metric-name" style="font-size: 0.7em; opacity: 0.8; display: block;">${first.name}</span><div class="main-metric-value" style="font-size: 1.2em; font-weight: bold;">${firstVal} ${first.unit || ''}</div></div>${extraHtml}</div>`;
+                }
+
+                updateDOMElement(config.valId, stringaDisplay);
+                const timeEl = document.getElementById(config.timeId);
+                if (timeEl) timeEl.innerText = timeString;
+            }
+
+            // --- PARTE 3: AGGIORNAMENTO STORE PER IL GRAFICO (Multi-Metrica) ---
+            if (data.metrics && data.metrics.length > 0) {
+                // Se lo store per questa sorgente non esiste, creiamolo come array di serie
+                if (!chartDataStore[sourceId]) {
+                    chartDataStore[sourceId] = data.metrics.map(m => ({
+                        label: m.name || sourceId,
+                        values: []
+                    }));
+                    createChartButton(sourceId);
+                }
+
+                // Aggiungiamo ogni valore alla rispettiva serie nello store
+                data.metrics.forEach((m, index) => {
+                    if (typeof m.value === 'number' && chartDataStore[sourceId][index]) {
+                        chartDataStore[sourceId][index].values.push(m.value);
+
+                        // Manteniamo il buffer di 10 valori
+                        if (chartDataStore[sourceId][index].values.length > 10) {
+                            chartDataStore[sourceId][index].values.shift();
+                        }
+                    }
+                });
+
+                saveChartData();
+
+                // Selezione automatica se è la prima metrica ricevuta
+                if (!activeChartSource) {
+                    activeChartSource = sourceId;
+                    const btn = document.querySelector(`.chart-btn[data-source="${sourceId}"]`);
+                    if (btn) btn.classList.add('active');
+                }
+
+                // Se è la sorgente attiva, rinfresca il grafico
+                if (activeChartSource === sourceId) updateChartVisuals();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initChart();
+
+            const socket = io();
+            socket.on('connect', () => {
+                if (typeof notificationOnConnection === "function") notificationOnConnection();
+            });
+            socket.on('rule_triggered', (data) => {
+                if (typeof notificationOnRuleTriggered === "function") notificationOnRuleTriggered(data);
+            });
+            socket.on('telemetry_update', processTelemetryData);
+
+            fetch('/api/latest-telemetry')
+                .then(res => res.json())
+                .then(cache => {
+                    for (const id in cache) processTelemetryData(cache[id]);
+                })
+                .catch(err => console.error("Errore cache:", err));
+        });
     </script>
 </body>
 
